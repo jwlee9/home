@@ -1,0 +1,35 @@
+/* Custom background color - banana yellow */
+:root {
+    --theme-bg: #EEEACD; /* Light banana yellow */
+    --theme: #333333; /* Dark text for good contrast */
+    --border: #E0E0E0; /* Light border color */
+    --code-bg: #EEEACD; /* Slightly different yellow for code blocks */
+}
+
+/* Ensure good contrast for various elements */
+body {
+    background-color: var(--theme-bg);
+    color: var(--theme);
+}
+
+/* Adjust header background */
+.header {
+    background-color: var(--theme-bg);
+}
+
+/* Adjust post/content backgrounds */
+.post-content,
+.post-header,
+.post-footer {
+    background-color: var(--theme-bg);
+}
+
+/* Profile mode background */
+.profile {
+    background-color: var(--theme-bg);
+}
+
+/* Adjust line spacing for subtitles */
+.subtitle {
+    line-height: 1.5; /* Adjust the value as needed */
+}
