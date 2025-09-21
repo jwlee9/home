@@ -1,7 +1,6 @@
-baseURL: "https://jwlee9.github.io/home/" 
+baseURL: "https://pascalmichaillat.org/hugo-website/" 
 title: Jaewon Lee
 theme: PaperMod
-relativeURLs: true
 
 enableInlineShortcodes: true
 enableRobotsTXT: true
@@ -19,10 +18,12 @@ menu:
         - name: Papers
           url: papers/
           weight: 2
-
+        - name: Blog
+          url: https://en.wikipedia.org/wiki/Moritz-Maria_von_Igelfeld_(character)
+          weight: 6
 
 params:
-    description: "This is Jaewon Lee's website!"
+    description: "This is Jaewon Lee's website."
     author: Jaewon Lee
     # googleAnalyticsID: "G-XXXXX"
     DateFormat: "January 2006"
