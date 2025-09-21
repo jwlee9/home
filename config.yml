@@ -22,7 +22,7 @@ menu:
 
 
 params:
-    description: "This is Jaewon Lee's website."
+    description: "This is Jaewon Lee's website!"
     author: Jaewon Lee
     # googleAnalyticsID: "G-XXXXX"
     DateFormat: "January 2006"
