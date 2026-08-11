@@ -12,9 +12,12 @@ taxonomies:
 
 menu:
     main:
-        - name: Projects
+        - name: Research
           url: projects/
           weight: 1
+        - name: Music
+          url: music/
+          weight: 2
 
 params:
     description: "This is Jaewon Lee's website."
@@ -32,7 +35,7 @@ params:
     ShowBreadCrumbs: false
     ShowCodeCopyButtons: true
     ShowAllPagesInArchive: false
-    MainSections: ["books","courses","papers","data"]
+    MainSections: ["projects","music"]
     ShowToc: false
     disableScrollToTop: true
     TocOpen: true
@@ -43,15 +46,17 @@ params:
     profileMode:
           enabled: true
           title: Jaewon Lee
-          subtitle: "<span class='subtitle'>Hi there! I am an undergraduate student at <a href='https://snu.ac.kr' style='text-decoration: underline;'>Seoul National University</a>, majoring in Music Composition and Computer Science and Engineering. I compose music and play the piano. Alongside my studies, I work as an Undergraduate Researcher at HEA-RO Lab, where I assist research in Auditory Neuroscience.</span>"
-          imageUrl: "photo.jpeg"
-          imageWidth: 160
-          imageHeight: 160
+          subtitle: "<span class='subtitle'>I am a composer, pianist, and undergraduate researcher at <a href='https://snu.ac.kr' style='text-decoration: underline;'>Seoul National University</a>. My work brings together music, auditory neuroscience, and computer science.</span>"
+          imageUrl: "jaewon-profile.jpg"
+          imageWidth: 180
+          imageHeight: 180
           buttons:
             - name: CV
               url: cv.pdf
-            - name: Projects
+            - name: Research
               url: projects/
+            - name: Music
+              url: music/
 
     socialIcons:
         - name: Email

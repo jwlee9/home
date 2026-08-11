@@ -1,4 +1,4 @@
 ---
-title: "Projects"
-description: "Selected projects by Jaewon Lee."
+title: "Research"
+description: "Research in auditory neuroscience and music perception."
 ---
