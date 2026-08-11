@@ -15,9 +15,6 @@ menu:
         - name: Research
           url: projects/
           weight: 1
-        - name: Music
-          url: music/
-          weight: 2
 
 params:
     description: "This is Jaewon Lee's website."
@@ -35,7 +32,7 @@ params:
     ShowBreadCrumbs: false
     ShowCodeCopyButtons: true
     ShowAllPagesInArchive: false
-    MainSections: ["projects","music"]
+    MainSections: ["projects"]
     ShowToc: false
     disableScrollToTop: true
     TocOpen: true
@@ -46,7 +43,7 @@ params:
     profileMode:
           enabled: true
           title: Jaewon Lee
-          subtitle: "<span class='subtitle'>I am a composer, pianist, and undergraduate researcher at <a href='https://www.hearo-kist.com/' style='text-decoration: underline;'>the HEA-RO Lab</a> at the Korea Institute of Science and Technology (KIST). My work brings together music, auditory neuroscience, and computer science.</span>"
+          subtitle: "<span class='subtitle'>Hi there! I am an undergraduate student at <a href='https://snu.ac.kr' style='text-decoration: underline;'>Seoul National University</a>, majoring in Music Composition and Computer Science and Engineering. I compose music and play the piano. Alongside my studies, I work as an Undergraduate Researcher at the <a href='https://www.hearo-kist.com/' style='text-decoration: underline;'>HEA-RO Lab</a>, where I assist research in Auditory Neuroscience. </span>"
           imageUrl: "jaewon-profile.jpg"
           imageWidth: 180
           imageHeight: 180
@@ -55,8 +52,6 @@ params:
               url: cv.pdf
             - name: Research
               url: projects/
-            - name: Music
-              url: music/
 
     socialIcons:
         - name: Email
@@ -68,6 +63,7 @@ params:
 
     assets:
         disableScrollBarStyle: true
+        favicon: banana.svg
     cover:
         hiddenInList: false
         hiddenInSingle: true
