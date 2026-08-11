@@ -43,7 +43,7 @@ params:
     profileMode:
           enabled: true
           title: Jaewon Lee
-          subtitle: "<span class='subtitle'>Hi there! I am an undergraduate student at <a href='https://snu.ac.kr' style='text-decoration: underline;'>Seoul National University</a>, majoring in Music Composition and Computer Science and Engineering. I compose music and play the piano. Alongside my studies, I work as an Undergraduate Researcher at the <a href='https://www.hearo-kist.com/' style='text-decoration: underline;'>HEA-RO Lab</a>, where I assist research in Auditory Neuroscience. </span>"
+          subtitle: "<span class='subtitle'>Hi there! I am an undergraduate student at <a href='https://snu.ac.kr' style='text-decoration: underline;'>Seoul National University</a>, majoring in Music Composition and Computer Science and Engineering. My passion lies in the intersection of music, neuroscience, and computer-based technology. Alongside my studies, I work as an Undergraduate Researcher at the <a href='https://www.hearo-kist.com/' style='text-decoration: underline;'>HEA-RO Lab</a>, where I assist research in Auditory Neuroscience. </span>"
           imageUrl: "jaewon-profile.jpg"
           imageWidth: 180
           imageHeight: 180
