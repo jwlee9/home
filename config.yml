@@ -1,4 +1,4 @@
-baseURL: "https://pascalmichaillat.org/hugo-website/" 
+baseURL: "https://jwlee9.github.io/home/"
 title: Jaewon Lee
 theme: PaperMod
 
@@ -12,15 +12,9 @@ taxonomies:
 
 menu:
     main:
-        - name: Books
-          url: books/
-          weight: 5 
-        - name: Papers
-          url: papers/
-          weight: 2
-        - name: Blog
-          url: https://en.wikipedia.org/wiki/Moritz-Maria_von_Igelfeld_(character)
-          weight: 6
+        - name: Projects
+          url: projects/
+          weight: 1
 
 params:
     description: "This is Jaewon Lee's website."
@@ -49,9 +43,7 @@ params:
     profileMode:
           enabled: true
           title: Jaewon Lee
-          subtitle: "<span class='subtitle'>Hi there! I am an undergraduate student at <a href='https://snu.ac.kr' style='text-decoration: underline;'>Seoul National University</a>, majoring in Music Composition and Computer Science and 
-          Engineering. I compose music and play the piano. Alongside my studies, I work as an Undergraduate Researcher at the <a href='#' style='text-decoration: underline;'>HEA-RO Lab</a>, 
-          where I assist research in Auditory Neuroscience. </span>"
+          subtitle: "<span class='subtitle'>Hi there! I am an undergraduate student at <a href='https://snu.ac.kr' style='text-decoration: underline;'>Seoul National University</a>, majoring in Music Composition and Computer Science and Engineering. I compose music and play the piano. Alongside my studies, I work as an Undergraduate Researcher at HEA-RO Lab, where I assist research in Auditory Neuroscience.</span>"
           imageUrl: "photo.jpeg"
           imageWidth: 160
           imageHeight: 160
@@ -60,10 +52,6 @@ params:
               url: cv.pdf
             - name: Projects
               url: projects/
-            - name: Data
-              url: data/
-            - name: Books
-              url: books/
 
     socialIcons:
         - name: Email
@@ -71,7 +59,7 @@ params:
         - name: YouTube
           url: https://www.youtube.com/@jwlee3
         - name: GitHub
-          url: https://github.com/jwlee9@snu.ac.kr
+          url: https://github.com/jwlee9
 
     assets:
         disableScrollBarStyle: true
