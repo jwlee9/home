@@ -11,33 +11,15 @@
   <body>
     <main class="shell">
       <header class="topbar">
-        <a class="brand" href="../">Jaewon Lee <span>·</span> 모일 시간</a>
+        <a class="brand" href="../">모일 시간</a>
         <div class="topbar-actions">
           <button class="text-button" id="language-toggle" type="button">EN</button>
-          <a class="text-button" href="../">← <span data-i18n="backToSite">홈페이지</span></a>
         </div>
       </header>
 
-      <section id="welcome-view" class="welcome-view">
-        <div class="hero">
-          <p class="eyebrow" data-i18n="eyebrow">리허설 · 모임 · 프로젝트</p>
-          <h1 data-i18n="welcomeTitle">모두가 가능한 시간을<br>빠르게 찾아보세요.</h1>
-          <p data-i18n="welcomeText">날짜와 시간을 정하고 링크를 공유하면, 모두가 드래그 또는 터치로 가능한 시간을 표시할 수 있어요.</p>
-          <button class="primary-button" id="start-create" type="button" data-i18n="createSchedule">새 일정 만들기</button>
-        </div>
-        <div class="how-it-works" aria-label="How it works">
-          <div><span>01</span><h2 data-i18n="stepOneTitle">일정 만들기</h2><p data-i18n="stepOneText">날짜, 시간대, 시간대를 정해요.</p></div>
-          <div><span>02</span><h2 data-i18n="stepTwoTitle">링크 공유하기</h2><p data-i18n="stepTwoText">연주자와 스태프에게 링크를 보내요.</p></div>
-          <div><span>03</span><h2 data-i18n="stepThreeTitle">겹치는 시간 찾기</h2><p data-i18n="stepThreeText">전체 또는 개인별 가능 시간을 비교해요.</p></div>
-        </div>
-      </section>
-
-      <section id="create-view" class="create-view is-hidden" aria-labelledby="create-title">
-        <button class="back-button" id="back-to-welcome" type="button">← <span data-i18n="back">뒤로</span></button>
+      <section id="create-view" class="create-view" aria-labelledby="create-title">
         <div class="create-card">
-          <p class="eyebrow" data-i18n="newSchedule">새 일정</p>
-          <h1 id="create-title" data-i18n="createTitle">언제 모일까요?</h1>
-          <p class="create-intro" data-i18n="createIntro">선택한 시간대는 참여자에게 표시됩니다.</p>
+          <h1 id="create-title" data-i18n="createTitle">새 일정</h1>
           <form id="create-form">
             <label><span data-i18n="eventTitle">일정 이름</span><input id="event-title" required maxlength="100" data-i18n-placeholder="eventPlaceholder" placeholder="예: 현악 4중주 리허설"></label>
             <div class="date-adder">
