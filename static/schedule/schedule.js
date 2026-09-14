@@ -26,6 +26,7 @@
   const formatWeekday = (date) => new Intl.DateTimeFormat(locale(), { weekday:"short" }).format(new Date(`${date}T12:00:00`));
   const formatDate = (date) => `${date.replaceAll("-", "/")} (${formatWeekday(date)})`;
   const formatTime = (minute) => new Intl.DateTimeFormat(locale(), { hour:"numeric", minute:"2-digit" }).format(new Date(`2000-01-01T${fromMinutes(minute)}:00`));
+  const formatGridTime = (minute) => new Intl.DateTimeFormat(locale(), { hour:"numeric" }).format(new Date(`2000-01-01T${fromMinutes(minute)}:00`));
   const slotKey = (date, minute) => `${date}T${fromMinutes(minute)}`;
   const publicUrl = (slug) => `${location.origin}${location.pathname}?event=${encodeURIComponent(slug)}`;
   const organizerUrl = () => `${publicUrl(state.event.slug)}#manage=${encodeURIComponent(state.ownerToken)}`;
@@ -102,7 +103,7 @@
     const selected = currentSlots();
     slots.forEach((minute, index) => {
       const slotEnd = minute + Number(state.event.slot_minutes), divider = slotEnd % 60 === 0 ? "hour-end" : slotEnd % 30 === 0 ? "half-hour-end" : "minor-end";
-      const label = document.createElement("div"); label.className = `time-label ${divider}`; if (index % Math.max(1, 60 / state.event.slot_minutes) === 0) label.textContent = formatTime(minute); calendar.appendChild(label);
+      const label = document.createElement("div"); label.className = `time-label ${divider}`; if (index % Math.max(1, 60 / state.event.slot_minutes) === 0) { const text = document.createElement("span"); text.textContent = formatGridTime(minute); label.appendChild(text); } calendar.appendChild(label);
       state.event.dates.forEach((date) => {
         const key = slotKey(date, minute), cell = document.createElement("button"); cell.type = "button"; cell.className = `slot ${divider}`; cell.dataset.key = key; cell.setAttribute("aria-label", `${formatDate(date)} ${fromMinutes(minute)}`);
         if (state.view === "mine") { if (selected.has(key)) cell.classList.add("selected"); bindCell(cell); }
