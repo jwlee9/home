@@ -28,6 +28,7 @@ alter table public.schedule_events add column if not exists is_closed boolean no
 alter table public.schedule_events add column if not exists confirmed_date date;
 alter table public.schedule_events add column if not exists confirmed_start_time time;
 alter table public.schedule_events add column if not exists confirmed_end_time time;
+alter table public.schedule_events add column if not exists highlight_color text not null default '#2a4997';
 alter table public.schedule_responses add column if not exists password_hash text;
 
 alter table public.schedule_events enable row level security;
@@ -36,16 +37,18 @@ drop policy if exists "Public schedules are readable" on public.schedule_events;
 drop policy if exists "Public responses are readable" on public.schedule_responses;
 revoke all on public.schedule_events, public.schedule_responses from anon;
 
+drop function if exists public.create_schedule_event(text, jsonb, time, time, integer, text);
 create or replace function public.create_schedule_event(
-  p_title text, p_dates jsonb, p_start_time time, p_end_time time, p_slot_minutes integer, p_timezone text
+  p_title text, p_dates jsonb, p_start_time time, p_end_time time, p_slot_minutes integer, p_timezone text, p_highlight_color text default '#2a4997'
 ) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare new_event public.schedule_events;
 begin
-  insert into public.schedule_events (title, dates, start_time, end_time, slot_minutes, timezone)
-  values (trim(p_title), p_dates, p_start_time, p_end_time, p_slot_minutes, p_timezone)
+  if p_highlight_color !~ '^#[0-9A-Fa-f]{6}$' then raise exception 'Invalid highlight color.' using errcode = 'P0001'; end if;
+  insert into public.schedule_events (title, dates, start_time, end_time, slot_minutes, timezone, highlight_color)
+  values (trim(p_title), p_dates, p_start_time, p_end_time, p_slot_minutes, p_timezone, lower(p_highlight_color))
   returning * into new_event;
   return jsonb_build_object(
-    'event', jsonb_build_object('id',new_event.id,'slug',new_event.slug,'title',new_event.title,'dates',new_event.dates,'start_time',new_event.start_time,'end_time',new_event.end_time,'slot_minutes',new_event.slot_minutes,'timezone',new_event.timezone,'is_closed',new_event.is_closed,'confirmed_date',new_event.confirmed_date,'confirmed_start_time',new_event.confirmed_start_time,'confirmed_end_time',new_event.confirmed_end_time,'created_at',new_event.created_at),
+    'event', jsonb_build_object('id',new_event.id,'slug',new_event.slug,'title',new_event.title,'dates',new_event.dates,'start_time',new_event.start_time,'end_time',new_event.end_time,'slot_minutes',new_event.slot_minutes,'timezone',new_event.timezone,'highlight_color',new_event.highlight_color,'is_closed',new_event.is_closed,'confirmed_date',new_event.confirmed_date,'confirmed_start_time',new_event.confirmed_start_time,'confirmed_end_time',new_event.confirmed_end_time,'created_at',new_event.created_at),
     'owner_token', new_event.owner_token
   );
 end;
@@ -60,7 +63,7 @@ begin
   select coalesce(jsonb_agg(jsonb_build_object('id',id,'display_name',display_name,'availability',availability,'updated_at',updated_at,'has_password',password_hash is not null) order by updated_at), '[]'::jsonb)
   into response_list from public.schedule_responses where event_id = found_event.id;
   return jsonb_build_object(
-    'event', jsonb_build_object('id',found_event.id,'slug',found_event.slug,'title',found_event.title,'dates',found_event.dates,'start_time',found_event.start_time,'end_time',found_event.end_time,'slot_minutes',found_event.slot_minutes,'timezone',found_event.timezone,'is_closed',found_event.is_closed,'confirmed_date',found_event.confirmed_date,'confirmed_start_time',found_event.confirmed_start_time,'confirmed_end_time',found_event.confirmed_end_time,'created_at',found_event.created_at),
+    'event', jsonb_build_object('id',found_event.id,'slug',found_event.slug,'title',found_event.title,'dates',found_event.dates,'start_time',found_event.start_time,'end_time',found_event.end_time,'slot_minutes',found_event.slot_minutes,'timezone',found_event.timezone,'highlight_color',found_event.highlight_color,'is_closed',found_event.is_closed,'confirmed_date',found_event.confirmed_date,'confirmed_start_time',found_event.confirmed_start_time,'confirmed_end_time',found_event.confirmed_end_time,'created_at',found_event.created_at),
     'responses', response_list
   );
 end;
@@ -116,6 +119,9 @@ begin
     when 'rename' then
       if char_length(trim(p_payload->>'title')) not between 1 and 100 then raise exception 'Name must be 1–100 characters.' using errcode = 'P0001'; end if;
       update public.schedule_events set title = trim(p_payload->>'title') where id = p_event_id;
+    when 'set_highlight_color' then
+      if (p_payload->>'highlight_color') !~ '^#[0-9A-Fa-f]{6}$' then raise exception 'Invalid highlight color.' using errcode = 'P0001'; end if;
+      update public.schedule_events set highlight_color = lower(p_payload->>'highlight_color') where id = p_event_id;
     when 'set_closed' then
       update public.schedule_events set is_closed = (p_payload->>'is_closed')::boolean where id = p_event_id;
     when 'delete_response' then
@@ -133,13 +139,13 @@ begin
 end;
 $$;
 
-revoke all on function public.create_schedule_event(text, jsonb, time, time, integer, text) from public;
+revoke all on function public.create_schedule_event(text, jsonb, time, time, integer, text, text) from public;
 revoke all on function public.get_schedule(text) from public;
 revoke all on function public.authenticate_schedule_response(uuid, text, text) from public;
 revoke all on function public.save_schedule_response(uuid, text, jsonb, uuid, text) from public;
 revoke all on function public.manage_schedule_event(uuid, uuid, text, jsonb) from public;
 grant usage on schema public to anon;
-grant execute on function public.create_schedule_event(text, jsonb, time, time, integer, text) to anon;
+grant execute on function public.create_schedule_event(text, jsonb, time, time, integer, text, text) to anon;
 grant execute on function public.get_schedule(text) to anon;
 grant execute on function public.authenticate_schedule_response(uuid, text, text) to anon;
 grant execute on function public.save_schedule_response(uuid, text, jsonb, uuid, text) to anon;

@@ -29,7 +29,10 @@
             <label class="field"><span data-i18n="end">End</span><input id="end-time" type="time" value="22:00" required></label>
             <label class="field"><span data-i18n="interval">Interval</span><select id="slot-length"><option value="30">30 min</option><option value="15">15 min</option><option value="60">60 min</option></select></label>
           </div>
-          <label class="field"><span data-i18n="timeZone">Time zone</span><select id="time-zone"><option value="Asia/Seoul">Korea Standard Time (KST)</option><option value="Asia/Tokyo">Japan Standard Time (JST)</option><option value="America/Los_Angeles">Pacific Time (PT)</option><option value="America/New_York">Eastern Time (ET)</option><option value="Europe/London">United Kingdom Time (UK)</option></select></label>
+          <div class="appearance-row">
+            <label class="field"><span data-i18n="timeZone">Time zone</span><select id="time-zone"><option value="Asia/Seoul">Korea Standard Time (KST)</option><option value="Asia/Tokyo">Japan Standard Time (JST)</option><option value="America/Los_Angeles">Pacific Time (PT)</option><option value="America/New_York">Eastern Time (ET)</option><option value="Europe/London">United Kingdom Time (UK)</option></select></label>
+            <label class="field color-field"><span data-i18n="highlightColor">Highlight</span><input class="color-input" id="highlight-color" type="color" value="#2a4997"></label>
+          </div>
           <p id="create-error" class="form-error" role="alert"></p>
           <button class="button button-primary" type="submit" data-i18n="createSchedule">Create a schedule</button>
         </form>
@@ -56,6 +59,7 @@
             <section class="organizer-section">
               <h2 data-i18n="eventSettings">Event settings</h2>
               <label class="field"><span data-i18n="eventName">Name</span><input id="manage-title" maxlength="100"></label>
+              <div class="organizer-color-row"><label class="field color-field"><span data-i18n="highlightColor">Highlight</span><input class="color-input" id="manage-highlight-color" type="color" value="#2a4997"></label><button class="button" id="update-highlight-color" type="button" data-i18n="updateColor">Update color</button></div>
               <div class="inline-actions"><button class="button" id="rename-event" type="button" data-i18n="rename">Rename</button><button class="button" id="toggle-closed" type="button"></button></div>
             </section>
             <section class="organizer-section">
