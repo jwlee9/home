@@ -93,7 +93,8 @@
       button.addEventListener("click", () => { state.view = choice.id ? "person" : "group"; state.person = choice.id; renderSchedule(); }); people.appendChild(button);
     });
   }
-  function showSlotDetails(date, minute, names) { const node = $("slot-details"); node.classList.remove("is-hidden"); node.textContent = `${formatDate(date)} · ${formatTime(minute)} — ${names.length ? names.join(", ") : tr("noOne")}`; }
+  const everyoneAvailable = () => state.lang === "ko" ? "전원 가능" : "Everyone is available";
+  function showSlotDetails(date, minute, names, unanimous = false) { const node = $("slot-details"); node.classList.remove("is-hidden"); node.textContent = `${formatDate(date)} · ${formatTime(minute)} — ${unanimous ? `${everyoneAvailable()}: ` : ""}${names.length ? names.join(", ") : tr("noOne")}`; }
   function renderCalendar() {
     const calendar = $("calendar"), slots = timeSlots(), count = state.responses.length; calendar.innerHTML = ""; calendar.style.setProperty("--days", state.event.dates.length);
     const corner = document.createElement("div"); corner.className = "corner"; calendar.appendChild(corner);
@@ -107,9 +108,10 @@
         if (state.view === "mine") { if (selected.has(key)) cell.classList.add("selected"); bindCell(cell); }
         if (state.view === "person") { if (selected.has(key)) cell.classList.add("person"); cell.disabled = true; }
         if (state.view === "group") {
-          const names = state.responses.filter((response) => response.availability.includes(key)).map((response) => response.display_name), ratio = count ? names.length / count : 0;
-          cell.classList.add("group"); cell.style.backgroundColor = names.length ? `rgba(42, 73, 151, ${0.16 + ratio * 0.7})` : ""; cell.title = names.length ? names.join(", ") : tr("noOne");
-          cell.addEventListener("click", () => showSlotDetails(date, minute, names)); cell.addEventListener("pointerenter", (event) => { if (event.pointerType === "mouse") showSlotDetails(date, minute, names); });
+          const names = state.responses.filter((response) => response.availability.includes(key)).map((response) => response.display_name), ratio = count ? names.length / count : 0, unanimous = count > 1 && names.length === count;
+          cell.classList.add("group"); cell.classList.toggle("unanimous", unanimous); cell.style.backgroundColor = names.length ? `rgba(42, 73, 151, ${0.16 + ratio * 0.7})` : ""; cell.title = unanimous ? `${everyoneAvailable()}: ${names.join(", ")}` : names.length ? names.join(", ") : tr("noOne");
+          if (unanimous) cell.setAttribute("aria-label", `${cell.getAttribute("aria-label")} — ${everyoneAvailable()}`);
+          cell.addEventListener("click", () => showSlotDetails(date, minute, names, unanimous)); cell.addEventListener("pointerenter", (event) => { if (event.pointerType === "mouse") showSlotDetails(date, minute, names, unanimous); });
         }
         calendar.appendChild(cell);
       });
@@ -125,7 +127,7 @@
     const mine = state.view === "mine"; $("mode-mine").classList.toggle("active", mine); $("mode-group").classList.toggle("active", !mine); $("mode-mine").setAttribute("aria-selected", mine); $("mode-group").setAttribute("aria-selected", !mine); $("save-area").classList.toggle("is-hidden", !mine); $("group-summary").classList.toggle("is-hidden", mine); $("slot-details").classList.add("is-hidden");
     if (mine) $("grid-instruction").textContent = state.name ? tr("marking", { name:state.name }) : tr("enterName");
     else if (state.view === "person") $("grid-instruction").textContent = tr("personAvailability", { name:state.person });
-    else $("grid-instruction").textContent = state.responses.length ? tr("groupHelp") : tr("noAvailability");
+    else $("grid-instruction").textContent = state.responses.length > 1 ? (state.lang === "ko" ? "색이 진할수록 가능한 사람이 많습니다. 금색 점은 전원이 가능한 시간입니다." : "Darker cells have more people available. Gold dots mark times that work for everyone.") : state.responses.length ? tr("groupHelp") : tr("noAvailability");
     if (!mine) $("group-summary").textContent = state.responses.length === 1 ? tr("person") : tr("people", { count:state.responses.length });
   }
   function renderConfirmed() {
