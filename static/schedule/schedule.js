@@ -30,6 +30,11 @@
   const validColor = (color) => /^#[0-9a-f]{6}$/i.test(color || "");
   const highlightColor = () => validColor(state.event?.highlight_color) ? state.event.highlight_color : "#2a4997";
   const highlightRgb = () => { const color = highlightColor().slice(1); return [0, 2, 4].map((index) => parseInt(color.slice(index, index + 2), 16)).join(", "); };
+  function updateCreateColor() {
+    const color = validColor($("highlight-color").value) ? $("highlight-color").value : "#2a4997", hex = color.slice(1), rgb = [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16));
+    const text = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000 > 155 ? "#18202b" : "#ffffff", button = $("create-schedule");
+    button.style.setProperty("--create-color", color); button.style.setProperty("--create-text", text);
+  }
   const slotKey = (date, minute) => `${date}T${fromMinutes(minute)}`;
   const publicUrl = (slug) => `${location.origin}${location.pathname}?event=${encodeURIComponent(slug)}`;
   const organizerUrl = () => `${publicUrl(state.event.slug)}#manage=${encodeURIComponent(state.ownerToken)}`;
@@ -187,9 +192,10 @@
     const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Jaewon Lee//Scheduler//EN\r\nBEGIN:VEVENT\r\nUID:${event.id}@jwlee9.github.io\r\nDTSTART;TZID=${event.timezone}:${date}T${start}00\r\nDTEND;TZID=${event.timezone}:${date}T${end}00\r\nSUMMARY:${escape(event.title)}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
     const url = URL.createObjectURL(new Blob([ics], { type:"text/calendar;charset=utf-8" })), link = document.createElement("a"); link.href = url; link.download = `${event.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "schedule"}.ics`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  function resetToCreate() { history.replaceState({}, "", location.pathname); $("create-form").reset(); $("start-time").value = "10:00"; $("end-time").value = "22:00"; updateDateSummary(); setMessage("create-error"); show("create-view"); }
+  function resetToCreate() { history.replaceState({}, "", location.pathname); $("create-form").reset(); $("start-time").value = "10:00"; $("end-time").value = "22:00"; updateCreateColor(); updateDateSummary(); setMessage("create-error"); show("create-view"); }
   function setup() {
-    applyLanguage(); $("language-toggle").addEventListener("click", () => { state.lang = state.lang === "en" ? "ko" : "en"; localStorage.setItem("scheduler-language", state.lang); applyLanguage(); });
+    applyLanguage(); updateCreateColor(); $("language-toggle").addEventListener("click", () => { state.lang = state.lang === "en" ? "ko" : "en"; localStorage.setItem("scheduler-language", state.lang); applyLanguage(); });
+    $("highlight-color").addEventListener("input", updateCreateColor);
     $("start-date").addEventListener("change", updateDateSummary); $("end-date").addEventListener("change", updateDateSummary); $("create-form").addEventListener("submit", (event) => { event.preventDefault(); createEvent(); }); $("new-schedule").addEventListener("click", resetToCreate); $("save-name").addEventListener("click", beginName); $("participant-name").addEventListener("keydown", (event) => { if (event.key === "Enter") beginName(); }); $("participant-password").addEventListener("keydown", (event) => { if (event.key === "Enter") beginName(); });
     $("mode-mine").addEventListener("click", () => { state.view = "mine"; state.person = null; renderSchedule(); }); $("mode-group").addEventListener("click", () => { state.view = "group"; state.person = null; renderSchedule(); }); $("save-availability").addEventListener("click", saveAvailability); $("copy-link").addEventListener("click", async () => { await navigator.clipboard.writeText(publicUrl(state.event.slug)); setMessage("save-status", tr("copied")); }); $("copy-organizer-link").addEventListener("click", async () => { await navigator.clipboard.writeText(organizerUrl()); setMessage("organizer-status", tr("organizerCopied")); });
     $("rename-event").addEventListener("click", () => manage("rename", { title:$("manage-title").value.trim() })); $("update-highlight-color").addEventListener("click", () => manage("set_highlight_color", { highlight_color:$("manage-highlight-color").value })); $("toggle-closed").addEventListener("click", () => manage("set_closed", { is_closed:!state.event.is_closed })); $("confirm-time").addEventListener("click", () => manage("confirm", { date:$("confirmed-date").value, start_time:$("confirmed-start").value, end_time:$("confirmed-end").value })); $("clear-confirmed").addEventListener("click", () => manage("clear_confirmation", {})); $("download-ics").addEventListener("click", downloadCalendar);
