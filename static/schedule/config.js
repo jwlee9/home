@@ -3,6 +3,6 @@
  * The anon key is designed to be public; never put the service_role key here.
  */
 window.SCHEDULER_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: ""
+  supabaseUrl: "https://uqnkiubpvovplvnrqaee.supabase.co",
+  supabaseAnonKey: "sb_publishable_ZO-OgWtXXKNLDAemKg5f6g_-g62EjsD"
 };
