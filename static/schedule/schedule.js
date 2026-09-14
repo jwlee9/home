@@ -93,7 +93,7 @@
       button.addEventListener("click", () => { state.view = choice.id ? "person" : "group"; state.person = choice.id; renderSchedule(); }); people.appendChild(button);
     });
   }
-  const everyoneAvailable = () => state.lang === "ko" ? "전원 가능" : "Everyone is available";
+  const everyoneAvailable = () => state.lang === "ko" ? "모두 가능" : "Everyone is available";
   function showSlotDetails(date, minute, names, unanimous = false) { const node = $("slot-details"); node.classList.remove("is-hidden"); node.textContent = `${formatDate(date)} · ${formatTime(minute)} — ${unanimous ? `${everyoneAvailable()}: ` : ""}${names.length ? names.join(", ") : tr("noOne")}`; }
   function renderCalendar() {
     const calendar = $("calendar"), slots = timeSlots(), count = state.responses.length; calendar.innerHTML = ""; calendar.style.setProperty("--days", state.event.dates.length);
@@ -127,7 +127,7 @@
     const mine = state.view === "mine"; $("mode-mine").classList.toggle("active", mine); $("mode-group").classList.toggle("active", !mine); $("mode-mine").setAttribute("aria-selected", mine); $("mode-group").setAttribute("aria-selected", !mine); $("save-area").classList.toggle("is-hidden", !mine); $("group-summary").classList.toggle("is-hidden", mine); $("slot-details").classList.add("is-hidden");
     if (mine) $("grid-instruction").textContent = state.name ? tr("marking", { name:state.name }) : tr("enterName");
     else if (state.view === "person") $("grid-instruction").textContent = tr("personAvailability", { name:state.person });
-    else $("grid-instruction").textContent = state.responses.length > 1 ? (state.lang === "ko" ? "색이 진할수록 가능한 사람이 많습니다. 금색 점은 전원이 가능한 시간입니다." : "Darker cells have more people available. Gold dots mark times that work for everyone.") : state.responses.length ? tr("groupHelp") : tr("noAvailability");
+    else $("grid-instruction").textContent = state.responses.length ? (state.lang === "ko" ? "칸을 누르거나 마우스를 올리면 가능한 사람을 볼 수 있습니다." : "Tap or hover over a time to see who is available.") : tr("noAvailability");
     if (!mine) $("group-summary").textContent = state.responses.length === 1 ? tr("person") : tr("people", { count:state.responses.length });
   }
   function renderConfirmed() {
