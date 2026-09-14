@@ -1,83 +1,60 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Simple rehearsal scheduling for groups.">
-    <title>모일 시간 · Jaewon Lee</title>
+    <title>Schedule · Jaewon Lee</title>
     <link rel="icon" type="image/svg+xml" href="../banana.svg">
     <link rel="stylesheet" href="schedule.css">
   </head>
   <body>
     <main class="shell">
-      <header class="topbar">
-        <a class="brand" href="../">모일 시간</a>
-        <div class="topbar-actions">
-          <button class="text-button" id="language-toggle" type="button">EN</button>
-        </div>
-      </header>
-
+      <header class="topbar"><a class="brand" href="../">Jaewon Lee</a><span>Schedule</span></header>
       <section id="create-view" class="create-view" aria-labelledby="create-title">
-        <div class="create-card">
-          <h1 id="create-title" data-i18n="createTitle">새 일정</h1>
-          <form id="create-form">
-            <label><span data-i18n="eventTitle">일정 이름</span><input id="event-title" required maxlength="100" data-i18n-placeholder="eventPlaceholder" placeholder="예: 현악 4중주 리허설"></label>
-            <div class="date-adder">
-              <label><span data-i18n="chooseDate">날짜 선택</span><input id="date-input" type="date"></label>
-              <button class="secondary-button" id="add-date" type="button" data-i18n="addDate">날짜 추가</button>
-            </div>
-            <div id="date-chips" class="date-chips" aria-live="polite"></div>
-            <p class="input-note" data-i18n="dateHint">하나 이상의 날짜를 추가해 주세요.</p>
-            <div class="field-row three">
-              <label><span data-i18n="startTime">시작 시간</span><input id="start-time" type="time" value="10:00" required></label>
-              <label><span data-i18n="endTime">종료 시간</span><input id="end-time" type="time" value="22:00" required></label>
-              <label><span data-i18n="slotLength">간격</span><select id="slot-length"><option value="30">30분</option><option value="15">15분</option><option value="60">60분</option></select></label>
-            </div>
-            <label><span data-i18n="timeZone">시간대</span><select id="time-zone"><option value="Asia/Seoul">대한민국 표준시 (KST)</option><option value="Asia/Tokyo">Japan Standard Time (JST)</option><option value="America/Los_Angeles">Pacific Time (PT)</option><option value="America/New_York">Eastern Time (ET)</option><option value="Europe/London">United Kingdom Time (UK)</option></select></label>
-            <p id="create-error" class="form-error" role="alert"></p>
-            <button class="primary-button wide" type="submit" data-i18n="createAndShare">일정 만들기</button>
-          </form>
-        </div>
+        <form id="create-form" class="create-form">
+          <div class="form-heading"><p>NEW EVENT</p><h1 id="create-title">Create a schedule</h1></div>
+          <label class="field field-title"><span>Name</span><input id="event-title" required maxlength="100" placeholder="String quartet rehearsal"></label>
+          <div class="date-range">
+            <label class="field"><span>From</span><input id="start-date" type="date" required></label>
+            <label class="field"><span>To</span><input id="end-date" type="date" required></label>
+          </div>
+          <p id="date-summary" class="field-note">Choose the first and last day.</p>
+          <div class="time-row">
+            <label class="field"><span>Start</span><input id="start-time" type="time" value="10:00" required></label>
+            <label class="field"><span>End</span><input id="end-time" type="time" value="22:00" required></label>
+            <label class="field"><span>Interval</span><select id="slot-length"><option value="30">30 min</option><option value="15">15 min</option><option value="60">60 min</option></select></label>
+          </div>
+          <label class="field"><span>Time zone</span><select id="time-zone"><option value="Asia/Seoul">Korea Standard Time (KST)</option><option value="Asia/Tokyo">Japan Standard Time (JST)</option><option value="America/Los_Angeles">Pacific Time (PT)</option><option value="America/New_York">Eastern Time (ET)</option><option value="Europe/London">United Kingdom Time (UK)</option></select></label>
+          <p id="create-error" class="form-error" role="alert"></p>
+          <button class="button button-primary" type="submit">Create schedule</button>
+        </form>
       </section>
-
       <section id="schedule-view" class="schedule-view is-hidden" aria-live="polite">
-        <div class="schedule-header">
-          <div>
-            <p class="eyebrow" id="event-timezone"></p>
-            <h1 id="event-name"></h1>
-            <p id="event-summary"></p>
-          </div>
-          <div class="schedule-actions">
-            <button class="secondary-button" id="copy-link" type="button">↗ <span data-i18n="copyLink">참여 링크 복사</span></button>
-            <button class="icon-button" id="new-schedule" type="button" aria-label="Create a new schedule">＋</button>
-          </div>
-        </div>
-
-        <div id="demo-notice" class="notice is-hidden"><strong data-i18n="demoTitle">데모 모드입니다.</strong> <span data-i18n="demoText">현재 이 브라우저에서만 저장돼요. Supabase 연결 후에는 공유 링크로 실시간 저장됩니다.</span></div>
-
-        <section class="identity-card" aria-labelledby="name-label">
-          <label id="name-label" for="participant-name" data-i18n="yourName">내 이름</label>
-          <div class="identity-row"><input id="participant-name" maxlength="60" data-i18n-placeholder="namePlaceholder" placeholder="이름을 입력하세요"><button class="secondary-button" id="save-name" type="button" data-i18n="continue">확인</button></div>
-          <p class="input-note" data-i18n="nameHint">이름과 가능 시간은 이 일정 링크를 가진 사람에게 표시됩니다.</p>
+        <header class="event-header">
+          <div><p id="event-meta" class="event-meta"></p><h1 id="event-name"></h1></div>
+          <div class="event-actions"><button class="button button-quiet" id="copy-link" type="button">Copy link</button><button class="button button-quiet" id="new-schedule" type="button">New</button></div>
+        </header>
+        <section class="identity" aria-labelledby="name-label">
+          <label id="name-label" class="field" for="participant-name"><span>Your name</span><input id="participant-name" maxlength="60" placeholder="Enter your name"></label>
+          <button class="button button-primary" id="save-name" type="button">Start marking times</button>
+          <p id="identity-status" class="field-note" aria-live="polite"></p>
         </section>
-
-        <section class="availability-panel">
-          <div class="panel-toolbar">
+        <section class="availability-panel" aria-label="Availability">
+          <div class="availability-topline">
             <div class="mode-switch" role="tablist" aria-label="Availability view">
-              <button id="mode-mine" class="mode-button active" type="button" role="tab" aria-selected="true" data-i18n="myAvailability">내 가능 시간</button>
-              <button id="mode-group" class="mode-button" type="button" role="tab" aria-selected="false" data-i18n="groupAvailability">전체 가능 시간</button>
+              <button id="mode-mine" class="mode-button active" type="button" role="tab" aria-selected="true">My availability</button>
+              <button id="mode-group" class="mode-button" type="button" role="tab" aria-selected="false">Group</button>
             </div>
-            <div id="group-legend" class="legend is-hidden" aria-label="Availability legend"></div>
+            <p id="group-summary" class="group-summary is-hidden"></p>
           </div>
-          <p class="grid-instruction" id="grid-instruction" data-i18n="dragInstruction">가능한 시간을 드래그하거나 터치해 표시하세요.</p>
+          <p class="grid-instruction" id="grid-instruction">Enter your name, then drag across the times you are available.</p>
           <div id="people-filter" class="people-filter is-hidden" aria-label="Participants"></div>
           <div class="calendar-wrap"><div id="calendar" class="calendar" role="grid"></div></div>
         </section>
-
-        <section id="save-area" class="save-area"><button class="primary-button" id="save-availability" type="button" disabled data-i18n="saveAvailability">가능 시간 저장</button><p id="save-status" aria-live="polite"></p></section>
+        <section id="save-area" class="save-area"><button class="button button-primary" id="save-availability" type="button" disabled>Save availability</button><p id="save-status" aria-live="polite"></p></section>
       </section>
     </main>
-    <template id="date-chip-template"><span class="date-chip"><span class="date-chip-label"></span><button type="button" class="remove-date" aria-label="Remove date">×</button></span></template>
     <script src="config.js"></script>
     <script src="schedule.js"></script>
   </body>
