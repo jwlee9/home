@@ -55,6 +55,8 @@ params:
               url: cv.pdf
             - name: Research
               url: projects/
+            - name: Scheduler
+              url: schedule/
 
     socialIcons:
         - name: Email
