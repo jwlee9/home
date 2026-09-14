@@ -89,7 +89,6 @@ begin
   if not found then raise exception 'Schedule not found.' using errcode = 'P0002'; end if;
   if closed then raise exception 'This schedule is closed.' using errcode = 'P0001'; end if;
   normalized_password := nullif(p_password, '');
-  if normalized_password is not null and char_length(normalized_password) < 6 then raise exception 'Password must be at least 6 characters.' using errcode = 'P0001'; end if;
   select * into saved_response from public.schedule_responses where event_id = p_event_id and display_name = trim(p_display_name);
   if found then
     if (p_edit_token is null or saved_response.edit_token <> p_edit_token)

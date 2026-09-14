@@ -23,8 +23,8 @@
   const toMinutes = (time) => { const [hours, minutes] = time.split(":").map(Number); return hours * 60 + minutes; };
   const fromMinutes = (value) => `${pad(Math.floor(value / 60))}:${pad(value % 60)}`;
   const formatClock = (time) => time.slice(0, 5);
-  const formatDate = (date) => new Intl.DateTimeFormat(locale(), { month:"short", day:"numeric", weekday:"short" }).format(new Date(`${date}T12:00:00`));
-  const formatShortDate = (date) => new Intl.DateTimeFormat(locale(), { month:"short", day:"numeric" }).format(new Date(`${date}T12:00:00`));
+  const formatWeekday = (date) => new Intl.DateTimeFormat(locale(), { weekday:"short" }).format(new Date(`${date}T12:00:00`));
+  const formatDate = (date) => `${date.replaceAll("-", "/")} (${formatWeekday(date)})`;
   const formatTime = (minute) => new Intl.DateTimeFormat(locale(), { hour:"numeric", minute:"2-digit" }).format(new Date(`2000-01-01T${fromMinutes(minute)}:00`));
   const slotKey = (date, minute) => `${date}T${fromMinutes(minute)}`;
   const publicUrl = (slug) => `${location.origin}${location.pathname}?event=${encodeURIComponent(slug)}`;
@@ -42,6 +42,7 @@
     $("language-toggle").textContent = state.lang === "en" ? "한국어" : "EN";
     document.querySelectorAll("[data-i18n]").forEach((node) => { node.textContent = tr(node.dataset.i18n); });
     document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => { node.placeholder = tr(node.dataset.i18nPlaceholder); });
+    $("event-title").placeholder = state.lang === "ko" ? "리허설" : "Rehearsal";
     [15, 30, 60].forEach((minutes) => { $(`slot-length`).querySelector(`option[value="${minutes}"]`).textContent = state.lang === "ko" ? `${minutes}분` : `${minutes} min`; });
     $("time-zone").querySelector('option[value="Asia/Seoul"]').textContent = state.lang === "ko" ? "한국 표준시 (KST)" : "Korea Standard Time (KST)";
     if (state.event) renderSchedule(); else updateDateSummary();
@@ -50,6 +51,7 @@
   function setMessage(id, message = "", error = false) { const node = $(id); node.textContent = message; node.classList.toggle("is-error", error); }
   function updateDateSummary() {
     const start = $("start-date").value, end = $("end-date").value;
+    [["start-date-display", start], ["end-date-display", end]].forEach(([id, value]) => { $(id).textContent = value ? value.replaceAll("-", "/") : "YYYY/MM/DD"; $(id).classList.toggle("empty", !value); });
     if (!start || !end) return setMessage("date-summary", tr("dateHint"));
     if (end < start) return setMessage("date-summary", tr("invalidDate"), true);
     const days = datesInRange(start, end).length;
@@ -95,7 +97,7 @@
   function renderCalendar() {
     const calendar = $("calendar"), slots = timeSlots(), count = state.responses.length; calendar.innerHTML = ""; calendar.style.setProperty("--days", state.event.dates.length);
     const corner = document.createElement("div"); corner.className = "corner"; calendar.appendChild(corner);
-    state.event.dates.forEach((date) => { const header = document.createElement("div"), parsed = new Date(`${date}T12:00:00`); header.className = "day-label"; header.innerHTML = `<span>${new Intl.DateTimeFormat(locale(), { weekday:"short" }).format(parsed)}</span><strong><span class="month">${new Intl.DateTimeFormat(locale(), { month:"short" }).format(parsed)} </span>${parsed.getDate()}</strong>`; calendar.appendChild(header); });
+    state.event.dates.forEach((date) => { const header = document.createElement("div"); header.className = "day-label"; header.innerHTML = `<span>${formatWeekday(date)}</span><strong>${date.replaceAll("-", "/<wbr>")}</strong>`; calendar.appendChild(header); });
     const selected = currentSlots();
     slots.forEach((minute, index) => {
       const slotEnd = minute + Number(state.event.slot_minutes), divider = slotEnd % 60 === 0 ? "hour-end" : slotEnd % 30 === 0 ? "half-hour-end" : "minor-end";
@@ -158,7 +160,7 @@
     setMessage("create-error"); try { const result = await createOnline(eventFromForm()); state.event = result.event; state.ownerToken = result.owner_token; localStorage.setItem(`scheduler-owner-${state.event.id}`, state.ownerToken); history.replaceState({}, "", organizerUrl()); state.responses = []; state.name = ""; state.ownSlots = new Set(); state.view = "mine"; show("schedule-view"); renderSchedule(); } catch (error) { setMessage("create-error", error.message || tr("createFailed"), true); }
   }
   async function beginName() {
-    const name = $("participant-name").value.trim(), password = $("participant-password").value; if (!name) return setMessage("identity-status", tr("enterName"), true); if (password && password.length < 6) return setMessage("identity-status", tr("passwordShort"), true);
+    const name = $("participant-name").value.trim(), password = $("participant-password").value; if (!name) return setMessage("identity-status", tr("enterName"), true);
     const existing = responseForName(name), savedToken = savedEditToken(name);
     try {
       if (existing && !savedToken) { if (!existing.has_password) return setMessage("identity-status", tr("noRecovery"), true); if (!password) return setMessage("identity-status", tr("passwordNeeded"), true); const result = await authenticateOnline(name, password); localStorage.setItem(tokenKey(name), result.edit_token); }
