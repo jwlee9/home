@@ -79,10 +79,13 @@
     const selected = currentSlots();
     slots.forEach((minute, index) => {
       const label = document.createElement("div"); label.className = "time-label";
+      const slotEnd = minute + Number(state.event.slot_minutes);
+      const divider = slotEnd % 60 === 0 ? "hour-end" : slotEnd % 30 === 0 ? "half-hour-end" : "minor-end";
+      label.classList.add(divider);
       if (index % Math.max(1, 60 / state.event.slot_minutes) === 0) label.textContent = formatTime(minute);
       calendar.appendChild(label);
       state.event.dates.forEach((date) => {
-        const key = slotKey(date, minute), cell = document.createElement("button"); cell.type = "button"; cell.className = "slot"; cell.dataset.key = key; cell.setAttribute("aria-label", `${formatDate(date)} ${fromMinutes(minute)}`);
+        const key = slotKey(date, minute), cell = document.createElement("button"); cell.type = "button"; cell.className = `slot ${divider}`; cell.dataset.key = key; cell.setAttribute("aria-label", `${formatDate(date)} ${fromMinutes(minute)}`);
         if (state.view === "mine") { if (selected.has(key)) cell.classList.add("selected"); bindCell(cell); }
         if (state.view === "person") { if (selected.has(key)) cell.classList.add("person"); cell.disabled = true; }
         if (state.view === "group") { const names = state.responses.filter((response) => response.availability.includes(key)).map((response) => response.display_name); const ratio = count ? names.length / count : 0; cell.classList.add("group"); cell.style.backgroundColor = names.length ? `rgba(42, 73, 151, ${0.16 + ratio * 0.7})` : ""; cell.title = names.length ? names.join(", ") : "No one has marked this time"; cell.setAttribute("aria-label", `${formatDate(date)} ${fromMinutes(minute)}: ${names.length ? names.join(", ") : "no one available"}`); cell.addEventListener("click", () => showSlotDetails(date, minute, names)); cell.addEventListener("pointerenter", (event) => { if (event.pointerType === "mouse") showSlotDetails(date, minute, names); }); }
