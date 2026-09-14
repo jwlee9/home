@@ -15,6 +15,9 @@ menu:
         - name: Research
           url: projects/
           weight: 1
+        - name: Schedule
+          url: schedule/
+          weight: 2
 
 params:
     description: "This is Jaewon Lee's website."
