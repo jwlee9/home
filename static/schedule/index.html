@@ -10,50 +10,91 @@
   </head>
   <body>
     <main class="shell">
-      <header class="topbar"><a class="brand" href="../">Jaewon Lee</a><span>Schedule</span></header>
+      <header class="topbar">
+        <a class="brand" href="../">Jaewon Lee</a>
+        <div class="topbar-actions"><span data-i18n="schedule">Schedule</span><button class="language-button" id="language-toggle" type="button">한국어</button></div>
+      </header>
+
       <section id="create-view" class="create-view" aria-labelledby="create-title">
         <form id="create-form" class="create-form">
-          <div class="form-heading"><p>NEW EVENT</p><h1 id="create-title">Create a schedule</h1></div>
-          <label class="field field-title"><span>Name</span><input id="event-title" required maxlength="100" placeholder="String quartet rehearsal"></label>
+          <div class="form-heading"><p data-i18n="newEvent">NEW EVENT</p><h1 id="create-title" data-i18n="createSchedule">Create a schedule</h1></div>
+          <label class="field"><span data-i18n="eventName">Name</span><input id="event-title" required maxlength="100" data-i18n-placeholder="eventPlaceholder" placeholder="String quartet rehearsal"></label>
           <div class="date-range">
-            <label class="field"><span>From</span><input id="start-date" type="date" required></label>
-            <label class="field"><span>To</span><input id="end-date" type="date" required></label>
+            <label class="field"><span data-i18n="from">From</span><input id="start-date" type="date" required></label>
+            <label class="field"><span data-i18n="to">To</span><input id="end-date" type="date" required></label>
           </div>
-          <p id="date-summary" class="field-note">Choose the first and last day.</p>
+          <p id="date-summary" class="field-note" data-i18n="dateHint">Choose the first and last day.</p>
           <div class="time-row">
-            <label class="field"><span>Start</span><input id="start-time" type="time" value="10:00" required></label>
-            <label class="field"><span>End</span><input id="end-time" type="time" value="22:00" required></label>
-            <label class="field"><span>Interval</span><select id="slot-length"><option value="30">30 min</option><option value="15">15 min</option><option value="60">60 min</option></select></label>
+            <label class="field"><span data-i18n="start">Start</span><input id="start-time" type="time" value="10:00" required></label>
+            <label class="field"><span data-i18n="end">End</span><input id="end-time" type="time" value="22:00" required></label>
+            <label class="field"><span data-i18n="interval">Interval</span><select id="slot-length"><option value="30">30 min</option><option value="15">15 min</option><option value="60">60 min</option></select></label>
           </div>
-          <label class="field"><span>Time zone</span><select id="time-zone"><option value="Asia/Seoul">Korea Standard Time (KST)</option><option value="Asia/Tokyo">Japan Standard Time (JST)</option><option value="America/Los_Angeles">Pacific Time (PT)</option><option value="America/New_York">Eastern Time (ET)</option><option value="Europe/London">United Kingdom Time (UK)</option></select></label>
+          <label class="field"><span data-i18n="timeZone">Time zone</span><select id="time-zone"><option value="Asia/Seoul">Korea Standard Time (KST)</option><option value="Asia/Tokyo">Japan Standard Time (JST)</option><option value="America/Los_Angeles">Pacific Time (PT)</option><option value="America/New_York">Eastern Time (ET)</option><option value="Europe/London">United Kingdom Time (UK)</option></select></label>
           <p id="create-error" class="form-error" role="alert"></p>
-          <button class="button button-primary" type="submit">Create schedule</button>
+          <button class="button button-primary" type="submit" data-i18n="createSchedule">Create a schedule</button>
         </form>
       </section>
+
       <section id="schedule-view" class="schedule-view is-hidden" aria-live="polite">
         <header class="event-header">
           <div><p id="event-meta" class="event-meta"></p><h1 id="event-name"></h1></div>
-          <div class="event-actions"><button class="button button-quiet" id="copy-link" type="button">Copy link</button><button class="button button-quiet" id="new-schedule" type="button">New</button></div>
+          <div class="event-actions">
+            <button class="button button-quiet" id="copy-link" type="button" data-i18n="copyLink">Copy link</button>
+            <button class="button button-quiet is-hidden" id="copy-organizer-link" type="button" data-i18n="copyOrganizerLink">Copy organizer link</button>
+            <button class="button button-quiet" id="new-schedule" type="button" data-i18n="new">New</button>
+          </div>
         </header>
+
+        <section id="confirmed-banner" class="confirmed-banner is-hidden">
+          <div><span data-i18n="confirmedTime">CONFIRMED TIME</span><strong id="confirmed-text"></strong></div>
+          <div class="confirmed-actions"><a class="button button-quiet" id="google-calendar" target="_blank" rel="noopener" data-i18n="googleCalendar">Google Calendar</a><button class="button button-quiet" id="download-ics" type="button" data-i18n="downloadCalendar">Download .ics</button></div>
+        </section>
+
+        <details id="organizer-panel" class="organizer-panel is-hidden">
+          <summary data-i18n="organizerControls">Organizer controls</summary>
+          <div class="organizer-grid">
+            <section class="organizer-section">
+              <h2 data-i18n="eventSettings">Event settings</h2>
+              <label class="field"><span data-i18n="eventName">Name</span><input id="manage-title" maxlength="100"></label>
+              <div class="inline-actions"><button class="button" id="rename-event" type="button" data-i18n="rename">Rename</button><button class="button" id="toggle-closed" type="button"></button></div>
+            </section>
+            <section class="organizer-section">
+              <h2 data-i18n="confirmTime">Confirm a time</h2>
+              <div class="confirmation-fields">
+                <label class="field"><span data-i18n="date">Date</span><select id="confirmed-date"></select></label>
+                <label class="field"><span data-i18n="start">Start</span><input id="confirmed-start" type="time"></label>
+                <label class="field"><span data-i18n="end">End</span><input id="confirmed-end" type="time"></label>
+              </div>
+              <div class="inline-actions"><button class="button button-primary" id="confirm-time" type="button" data-i18n="confirm">Confirm</button><button class="button" id="clear-confirmed" type="button" data-i18n="clear">Clear</button></div>
+            </section>
+            <section class="organizer-section organizer-participants">
+              <h2 data-i18n="participants">Participants</h2>
+              <div id="organizer-people"></div>
+            </section>
+          </div>
+          <p id="organizer-status" class="field-note" aria-live="polite"></p>
+        </details>
+
+        <div id="closed-notice" class="closed-notice is-hidden" data-i18n="closedNotice">This schedule is closed to new responses.</div>
         <section class="identity" aria-labelledby="name-label">
-          <label id="name-label" class="field" for="participant-name"><span>Your name</span><input id="participant-name" maxlength="60" placeholder="Enter your name"></label>
-          <button class="button button-primary" id="save-name" type="button">Start marking times</button>
+          <label id="name-label" class="field" for="participant-name"><span data-i18n="yourName">Your name</span><input id="participant-name" maxlength="60" data-i18n-placeholder="namePlaceholder" placeholder="Enter your name"></label>
+          <label class="field password-field" for="participant-password"><span data-i18n="passwordOptional">Password (optional)</span><input id="participant-password" type="password" maxlength="72" autocomplete="current-password"></label>
+          <button class="button button-primary" id="save-name" type="button" data-i18n="startMarking">Start marking times</button>
+          <p class="password-hint" data-i18n="passwordHint">Set one if you want to edit from another device.</p>
           <p id="identity-status" class="field-note" aria-live="polite"></p>
         </section>
+
         <section class="availability-panel" aria-label="Availability">
           <div class="availability-topline">
-            <div class="mode-switch" role="tablist" aria-label="Availability view">
-              <button id="mode-mine" class="mode-button active" type="button" role="tab" aria-selected="true">My availability</button>
-              <button id="mode-group" class="mode-button" type="button" role="tab" aria-selected="false">Group</button>
-            </div>
+            <div class="mode-switch" role="tablist" aria-label="Availability view"><button id="mode-mine" class="mode-button active" type="button" role="tab" aria-selected="true" data-i18n="myAvailability">My availability</button><button id="mode-group" class="mode-button" type="button" role="tab" aria-selected="false" data-i18n="group">Group</button></div>
             <p id="group-summary" class="group-summary is-hidden"></p>
           </div>
-          <p class="grid-instruction" id="grid-instruction">Enter your name, then drag across the times you are available.</p>
+          <p class="grid-instruction" id="grid-instruction"></p>
           <p id="slot-details" class="slot-details is-hidden" aria-live="polite"></p>
           <div id="people-filter" class="people-filter is-hidden" aria-label="Participants"></div>
           <div class="calendar-wrap"><div id="calendar" class="calendar" role="grid"></div></div>
         </section>
-        <section id="save-area" class="save-area"><button class="button button-primary" id="save-availability" type="button" disabled>Save available times</button><p id="save-status" aria-live="polite"></p></section>
+        <section id="save-area" class="save-area"><button class="button button-primary" id="save-availability" type="button" disabled></button><p id="save-status" aria-live="polite"></p></section>
       </section>
     </main>
     <script src="config.js"></script>
