@@ -1,0 +1,36 @@
+const assert = require('node:assert/strict');
+const find = require('../static/schedule/shared-windows.js');
+const dates = ['2026-09-21','2026-09-22','2026-09-23'];
+const event = {dates, start_time:'10:00', end_time:'14:00', slot_minutes:30};
+const keys = (date, times) => times.map(time => `${date}T${time}`);
+const response = availability => ({availability});
+const all = dates.flatMap(date => keys(date,['10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30']));
+assert.deepEqual(find(event,[],90),[],'No responses must not imply unanimous availability');
+assert.deepEqual(find(event,[response([])],90),[]);
+assert.deepEqual(find(event,[response(all),response(all)],90),dates.map(date=>({date,start:600,end:840})),'Return entire blocks, not duration-sized slices');
+const gap = keys(dates[0],['10:00','10:30','11:30','12:00']);
+assert.deepEqual(find(event,[response(gap),response(gap)],90),[],'A missing slot breaks continuity');
+const early = keys(dates[0],['10:00','10:30']), late = keys(dates[0],['11:00','11:30']);
+assert.deepEqual(find(event,[response(early),response(late)],90),[],'Rotating attendees must not count as a shared window');
+const boundary = keys(dates[0],['12:30','13:00','13:30']);
+assert.deepEqual(find(event,[response(boundary)],90),[{date:dates[0],start:750,end:840}],'Exact end boundary is valid');
+assert.deepEqual(find(event,[response(all)],45),[],'Duration must respect the grid interval');
+for (const invalid of [0,-30,NaN,Infinity,600]) assert.deepEqual(find(event,[response(all)],invalid),[]);
+const acrossDays=[...keys(dates[0],['13:00','13:30']),...keys(dates[1],['10:00'])];
+assert.deepEqual(find(event,[response(acrossDays)],90),[],'Never join dates');
+const partial={...event,dates:[dates[0]],start_time:'10:15',end_time:'11:30'};
+const offHour=keys(dates[0],['10:15','10:45','11:15']);
+assert.deepEqual(find(partial,[response(offHour)],60),[{date:dates[0],start:615,end:675}]);
+assert.deepEqual(find(partial,[response(offHour)],90),[],'Do not include the incomplete final cell');
+for (const step of [15,60]) {
+  const e={...event,dates:[dates[0]],slot_minutes:step};
+  const slots=[]; for(let m=600;m<840;m+=step)slots.push(`${dates[0]}T${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`);
+  assert.equal(find(e,[response(slots)],120)[0].end,840);
+}
+const runs=keys(dates[0],['10:00','10:30','12:00','12:30']);
+assert.equal(find(event,[response(runs)],60).length,2,'Separate continuous runs are distinct suggestions');
+const manyDates=[...dates,'2026-09-24','2026-09-25'];
+const manySlots=manyDates.flatMap(date=>keys(date,['10:00','10:30','11:00']));
+assert.equal(find({...event,dates:manyDates},[response(manySlots)],90).length,5,'No three-block cap');
+assert.deepEqual(find(event,[response(all)],0),[],'Any length leaves the normal heatmap unchanged');
+console.log('Shared-window checks passed: continuity, attendees, dates, deduplication, intervals, duration validation and boundaries.');

@@ -2,6 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://uqnkiubpvovplvnrqaee.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Simple scheduling service for groups">
     <title>Schedule · Jaewon Lee</title>
@@ -20,8 +22,14 @@
           <div class="form-heading"><h1 id="create-title" data-i18n="createSchedule">Create a schedule</h1></div>
           <label class="field"><span data-i18n="eventName">Name</span><input id="event-title" required maxlength="100" data-i18n-placeholder="eventPlaceholder" placeholder="Rehearsal"></label>
           <div class="date-range">
-            <label class="field"><span data-i18n="from">From</span><span class="date-control"><input id="start-date" type="date" lang="en-CA" required><span class="date-display empty" id="start-date-display">YYYY/MM/DD</span></span></label>
-            <label class="field"><span data-i18n="to">To</span><span class="date-control"><input id="end-date" type="date" lang="en-CA" required><span class="date-display empty" id="end-date-display">YYYY/MM/DD</span></span></label>
+            <div class="field"><span id="start-date-label" data-i18n="from">From</span><input id="start-date" type="hidden"><button id="start-date-button" class="date-button" type="button" aria-labelledby="start-date-label start-date-display" aria-haspopup="dialog" aria-expanded="false" aria-controls="date-picker"><span class="empty" id="start-date-display">YYYY/MM/DD</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 11h16"/></svg></button></div>
+            <div class="field"><span id="end-date-label" data-i18n="to">To</span><input id="end-date" type="hidden"><button id="end-date-button" class="date-button" type="button" aria-labelledby="end-date-label end-date-display" aria-haspopup="dialog" aria-expanded="false" aria-controls="date-picker"><span class="empty" id="end-date-display">YYYY/MM/DD</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 11h16"/></svg></button></div>
+            <div id="date-picker" class="date-picker is-hidden" role="dialog" aria-label="Choose dates">
+              <div class="date-picker-heading"><span id="date-picker-prompt"></span><button id="date-picker-close" class="calendar-nav" type="button" aria-label="Close">×</button></div>
+              <div class="date-picker-month"><button id="date-picker-prev" class="calendar-nav" type="button" aria-label="Previous month">‹</button><strong id="date-picker-month" aria-live="polite"></strong><button id="date-picker-next" class="calendar-nav" type="button" aria-label="Next month">›</button></div>
+              <div id="date-picker-weekdays" class="date-picker-weekdays" aria-hidden="true"></div>
+              <div id="date-picker-days" class="date-picker-days" role="group" aria-label="Dates"></div>
+            </div>
           </div>
           <p id="date-summary" class="field-note" data-i18n="dateHint">Choose the first and last day.</p>
           <div class="time-row">
@@ -38,7 +46,7 @@
         </form>
       </section>
 
-      <section id="schedule-view" class="schedule-view is-hidden" aria-live="polite">
+      <section id="schedule-view" class="schedule-view is-hidden">
         <header class="event-header">
           <div><p id="event-meta" class="event-meta"></p><h1 id="event-name"></h1></div>
           <div class="event-actions">
@@ -94,14 +102,25 @@
             <p id="group-summary" class="group-summary is-hidden"></p>
           </div>
           <p class="grid-instruction" id="grid-instruction"></p>
-          <p id="slot-details" class="slot-details is-hidden" aria-live="polite"></p>
+          <aside id="slot-details" class="slot-details is-hidden" aria-live="polite"><button id="slot-details-close" class="slot-details-close" type="button" aria-label="Close">×</button><strong id="slot-details-time"></strong><p id="slot-details-names"></p></aside>
           <div id="people-filter" class="people-filter is-hidden" aria-label="Participants"></div>
-          <div class="calendar-wrap"><div id="calendar" class="calendar" role="grid"></div></div>
+          <div id="window-finder" class="window-finder is-hidden">
+            <div class="window-controls">
+              <label id="window-label" for="window-duration">Meeting length</label>
+              <select id="window-duration"></select>
+              <label id="window-custom-label" class="window-custom is-hidden"><span id="window-custom-text">Minutes</span><input id="window-custom" type="number" inputmode="numeric" aria-describedby="window-message"></label>
+            </div>
+            <p id="window-message" class="window-message" role="status"></p>
+          </div>
+          <div class="calendar-wrap"><div id="calendar" class="calendar" role="group" aria-label="Available times"></div></div>
         </section>
-        <section id="save-area" class="save-area"><button class="button button-primary" id="save-availability" type="button" disabled></button><p id="save-status" aria-live="polite"></p></section>
+        <section id="save-area" class="save-area"><button class="button button-primary" id="save-availability" type="button" disabled></button><div class="save-feedback"><svg class="saved-check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-8" pathLength="1"/></svg><p id="save-status" aria-live="polite"></p></div></section>
       </section>
     </main>
     <script src="config.js"></script>
+    <script src="shared-windows.js"></script>
+    <script src="validation.js"></script>
     <script src="schedule.js"></script>
+    <script src="date-picker.js"></script>
   </body>
 </html>
