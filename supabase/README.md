@@ -22,6 +22,7 @@ The separate local design-preview directory is not production code or a producti
 - Tables are inaccessible to `anon` and `authenticated`; public operations go through five explicitly granted RPCs with fixed empty search paths and explicit schema references. RLS remains enabled.
 - New share links have 128 bits of randomness. Older 48-bit links remain valid.
 - New events: at most 31 dates, complete 15/30/60-minute intervals. Up to 200 participants. The API validates dates, colors, time zones, slot membership, duplicates and payload counts.
+- Organizers can replace an event's date range. Availability on dates that remain is preserved, removed dates are pruned from every response, and added dates begin empty. A confirmed time is cleared automatically if its date is removed.
 
 ## Operational limits / remaining risks
 

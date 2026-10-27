@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="utf-8">
     <meta name="referrer" content="no-referrer">
@@ -14,7 +14,7 @@
     <main class="shell">
       <header class="topbar">
         <a class="brand" href="../">Jaewon Lee</a>
-        <div class="topbar-actions"><span data-i18n="schedule">Schedule</span><button class="language-button" id="language-toggle" type="button">한국어</button></div>
+        <div class="topbar-actions"><span data-i18n="schedule">일정</span><button class="language-button" id="language-toggle" type="button">EN</button></div>
       </header>
 
       <section id="create-view" class="create-view" aria-labelledby="create-title">
@@ -67,6 +67,12 @@
             <section class="organizer-section">
               <h2 data-i18n="eventSettings">Event settings</h2>
               <label class="field"><span data-i18n="eventName">Name</span><input id="manage-title" maxlength="100"></label>
+              <div class="organizer-date-editor">
+                <label class="field"><span data-i18n="from">From</span><input id="manage-start-date" type="date"></label>
+                <label class="field"><span data-i18n="to">To</span><input id="manage-end-date" type="date"></label>
+                <button class="button" id="update-event-dates" type="button" data-i18n="updateDates">Update dates</button>
+              </div>
+              <p class="field-note organizer-date-note" data-i18n="dateEditHint">Times on dates you keep remain saved. New dates start empty.</p>
               <div class="organizer-color-row"><label class="field color-field"><span data-i18n="highlightColor">Highlight</span><input class="color-input" id="manage-highlight-color" type="color" value="#2a4997"></label><button class="button" id="update-highlight-color" type="button" data-i18n="updateColor">Update color</button></div>
               <div class="inline-actions"><button class="button" id="rename-event" type="button" data-i18n="rename">Rename</button><button class="button" id="toggle-closed" type="button"></button></div>
             </section>

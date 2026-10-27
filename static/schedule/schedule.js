@@ -8,7 +8,7 @@
     setItem(key, value) { memoryStorage.set(key, String(value)); try { localStorage.setItem(key, value); } catch { /* In-memory editing still works this visit. */ } }
   };
   const state = {
-    lang: storage.getItem("scheduler-language") === "ko" ? "ko" : "en",
+    lang: storage.getItem("scheduler-language") === "en" ? "en" : "ko",
     event: null, responses: [], name: "", password: "", ownSlots: new Set(),
     view: "mine", person: null, dragging: false, paintValue: true,
     activePointer: null, ownerToken: null, saving: false, creating: false, identifying: false,
@@ -20,10 +20,10 @@
   const zones = window.schedulerZones;
   const copy = {
     en: {
-      schedule:"Schedule", newEvent:"NEW EVENT", createSchedule:"Create a schedule", eventName:"Name", eventPlaceholder:"String quartet rehearsal", from:"From", to:"To", dateHint:"Choose the first and last day.", start:"Start", end:"End", interval:"Interval", timeZone:"Time zone", highlightColor:"Highlight", updateColor:"Update color", copyLink:"Copy link", copyOrganizerLink:"Copy organizer link", new:"New", confirmedTime:"CONFIRMED TIME", googleCalendar:"Google Calendar", downloadCalendar:"Download .ics", organizerControls:"Organizer controls", eventSettings:"Event settings", rename:"Rename", confirmTime:"Confirm a time", date:"Date", confirm:"Confirm", clear:"Clear", participants:"Participants", yourName:"Your name", namePlaceholder:"Enter your name", passwordOptional:"Password (optional)", passwordHint:"Set one if you want to edit from another device.", startMarking:"Start marking times", myAvailability:"My availability", group:"Group", saveTimes:"Save available times", updateTimes:"Update available times", closeResponses:"Close responses", reopenResponses:"Reopen responses", closedNotice:"This schedule is closed to responses.", noParticipants:"No responses yet.", remove:"Remove", dateRange:"Choose a date range.", invalidDate:"The end date must be after the start date.", invalidTime:"End time must be later than start time.", enterEventName:"Enter a schedule name.", enterName:"Enter your name first.", passwordShort:"Use at least 6 characters for a password.", passwordNeeded:"Enter the password for this name.", noRecovery:"This entry has no password and cannot be opened in this browser. Ask the organizer to remove it.", marking:"Marking availability as {name}. Drag to add or remove times.", editing:"Editing saved times for {name}.", starting:"Now marking availability as {name}.", groupHelp:"Darker cells have more people available. Tap or hover to see names.", personAvailability:"{name}'s availability.", noAvailability:"No availability has been saved yet.", people:"{count} people", person:"1 person", noOne:"no one has marked this time", saved:"Saved. You can return here and edit from any device with your password.", savedBrowser:"Saved. You can return here and edit from this browser.", copied:"Participant link copied.", organizerCopied:"Private organizer link copied.", createFailed:"Could not create the schedule.", saveFailed:"Could not save. Check your password or connection.", managed:"Changes saved.", removeConfirm:"Remove {name}'s response?", foundError:"This schedule could not be found.", confirmed:"Confirmed", calendarTitle:"Confirmed time"
+      schedule:"Schedule", newEvent:"NEW EVENT", createSchedule:"Create a schedule", eventName:"Name", eventPlaceholder:"String quartet rehearsal", from:"From", to:"To", dateHint:"Choose the first and last day.", updateDates:"Update dates", dateEditHint:"Times on dates you keep remain saved. New dates start empty.", start:"Start", end:"End", interval:"Interval", timeZone:"Time zone", highlightColor:"Highlight", updateColor:"Update color", copyLink:"Copy link", copyOrganizerLink:"Copy organizer link", new:"New", confirmedTime:"CONFIRMED TIME", googleCalendar:"Google Calendar", downloadCalendar:"Download .ics", organizerControls:"Organizer controls", eventSettings:"Event settings", rename:"Rename", confirmTime:"Confirm a time", date:"Date", confirm:"Confirm", clear:"Clear", participants:"Participants", yourName:"Your name", namePlaceholder:"Enter your name", passwordOptional:"Password (optional)", passwordHint:"Set one if you want to edit from another device.", startMarking:"Start marking times", myAvailability:"My availability", group:"Group", saveTimes:"Save available times", updateTimes:"Update available times", closeResponses:"Close responses", reopenResponses:"Reopen responses", closedNotice:"This schedule is closed to responses.", noParticipants:"No responses yet.", remove:"Remove", dateRange:"Choose a date range.", invalidDate:"The end date must be after the start date.", invalidTime:"End time must be later than start time.", enterEventName:"Enter a schedule name.", enterName:"Enter your name first.", passwordShort:"Use at least 6 characters for a password.", passwordNeeded:"Enter the password for this name.", noRecovery:"This entry has no password and cannot be opened in this browser. Ask the organizer to remove it.", marking:"Marking availability as {name}. Drag to add or remove times.", editing:"Editing saved times for {name}.", starting:"Now marking availability as {name}.", groupHelp:"Darker cells have more people available. Tap or hover to see names.", personAvailability:"{name}'s availability.", noAvailability:"No availability has been saved yet.", people:"{count} people", person:"1 person", noOne:"no one has marked this time", saved:"Saved. You can return here and edit from any device with your password.", savedBrowser:"Saved. You can return here and edit from this browser.", copied:"Participant link copied.", organizerCopied:"Private organizer link copied.", createFailed:"Could not create the schedule.", saveFailed:"Could not save. Check your password or connection.", managed:"Changes saved.", removeConfirm:"Remove {name}'s response?", foundError:"This schedule could not be found.", confirmed:"Confirmed", calendarTitle:"Confirmed time"
     },
     ko: {
-      schedule:"일정", newEvent:"새 일정", createSchedule:"일정 만들기", eventName:"일정 이름", eventPlaceholder:"현악 4중주 리허설", from:"시작일", to:"종료일", dateHint:"첫날과 마지막 날을 선택하세요.", start:"시작", end:"종료", interval:"시간 간격", timeZone:"시간대", highlightColor:"강조 색상", updateColor:"색상 변경", copyLink:"참여 링크 복사", copyOrganizerLink:"관리자 링크 복사", new:"새 일정", confirmedTime:"확정된 시간", googleCalendar:"Google 캘린더", downloadCalendar:"캘린더 파일 받기", organizerControls:"관리자 설정", eventSettings:"일정 설정", rename:"이름 변경", confirmTime:"시간 확정", date:"날짜", confirm:"확정", clear:"해제", participants:"참여자", yourName:"이름", namePlaceholder:"이름 입력", passwordOptional:"비밀번호 (선택)", passwordHint:"다른 기기에서도 수정하려면 설정하세요.", startMarking:"가능한 시간 표시하기", myAvailability:"내 시간", group:"전체", saveTimes:"가능한 시간 저장", updateTimes:"가능한 시간 수정", closeResponses:"응답 마감", reopenResponses:"응답 다시 받기", closedNotice:"응답이 마감된 일정입니다.", noParticipants:"아직 응답이 없습니다.", remove:"삭제", dateRange:"날짜 범위를 선택하세요.", invalidDate:"종료일은 시작일보다 빠를 수 없습니다.", invalidTime:"종료 시간은 시작 시간보다 늦어야 합니다.", enterEventName:"일정 이름을 입력하세요.", enterName:"이름을 먼저 입력하세요.", passwordShort:"비밀번호는 6자 이상 입력하세요.", passwordNeeded:"이 이름에 설정된 비밀번호를 입력하세요.", noRecovery:"비밀번호가 없는 응답이며 이 브라우저에서는 열 수 없습니다. 관리자에게 삭제를 요청하세요.", marking:"{name} · 드래그하여 시간을 추가하거나 지우세요.", editing:"{name}의 저장된 시간을 수정합니다.", starting:"{name} · 가능한 시간을 표시합니다.", groupHelp:"색이 진할수록 가능한 사람이 많습니다. 칸을 누르거나 마우스를 올리면 이름을 볼 수 있습니다.", personAvailability:"{name}의 가능한 시간입니다.", noAvailability:"아직 저장된 응답이 없습니다.", people:"{count}명", person:"1명", noOne:"가능한 사람이 없습니다", saved:"저장했습니다. 비밀번호로 다른 기기에서도 수정할 수 있습니다.", savedBrowser:"저장했습니다. 이 브라우저에서 다시 수정할 수 있습니다.", copied:"참여 링크를 복사했습니다.", organizerCopied:"비공개 관리자 링크를 복사했습니다.", createFailed:"일정을 만들지 못했습니다.", saveFailed:"저장하지 못했습니다. 비밀번호나 인터넷 연결을 확인하세요.", managed:"변경사항을 저장했습니다.", removeConfirm:"{name}의 응답을 삭제할까요?", foundError:"일정을 찾지 못했습니다.", confirmed:"확정", calendarTitle:"확정된 일정"
+      schedule:"일정", newEvent:"새 일정", createSchedule:"일정 만들기", eventName:"일정 이름", eventPlaceholder:"현악 4중주 리허설", from:"시작일", to:"종료일", dateHint:"첫날과 마지막 날을 선택하세요.", updateDates:"날짜 변경", dateEditHint:"유지한 날짜의 응답은 그대로 남고, 새 날짜는 비어 있습니다.", start:"시작", end:"종료", interval:"시간 간격", timeZone:"시간대", highlightColor:"강조 색상", updateColor:"색상 변경", copyLink:"참여 링크 복사", copyOrganizerLink:"관리자 링크 복사", new:"새 일정", confirmedTime:"확정된 시간", googleCalendar:"Google 캘린더", downloadCalendar:"캘린더 파일 받기", organizerControls:"관리자 설정", eventSettings:"일정 설정", rename:"이름 변경", confirmTime:"시간 확정", date:"날짜", confirm:"확정", clear:"해제", participants:"참여자", yourName:"이름", namePlaceholder:"이름 입력", passwordOptional:"비밀번호 (선택)", passwordHint:"다른 기기에서도 수정하려면 설정하세요.", startMarking:"가능한 시간 표시하기", myAvailability:"내 시간", group:"전체", saveTimes:"가능한 시간 저장", updateTimes:"가능한 시간 수정", closeResponses:"응답 마감", reopenResponses:"응답 다시 받기", closedNotice:"응답이 마감된 일정입니다.", noParticipants:"아직 응답이 없습니다.", remove:"삭제", dateRange:"날짜 범위를 선택하세요.", invalidDate:"종료일은 시작일보다 빠를 수 없습니다.", invalidTime:"종료 시간은 시작 시간보다 늦어야 합니다.", enterEventName:"일정 이름을 입력하세요.", enterName:"이름을 먼저 입력하세요.", passwordShort:"비밀번호는 6자 이상 입력하세요.", passwordNeeded:"이 이름에 설정된 비밀번호를 입력하세요.", noRecovery:"비밀번호가 없는 응답이며 이 브라우저에서는 열 수 없습니다. 관리자에게 삭제를 요청하세요.", marking:"{name} · 드래그하여 시간을 추가하거나 지우세요.", editing:"{name}의 저장된 시간을 수정합니다.", starting:"{name} · 가능한 시간을 표시합니다.", groupHelp:"색이 진할수록 가능한 사람이 많습니다. 칸을 누르거나 마우스를 올리면 이름을 볼 수 있습니다.", personAvailability:"{name}의 가능한 시간입니다.", noAvailability:"아직 저장된 응답이 없습니다.", people:"{count}명", person:"1명", noOne:"가능한 사람이 없습니다", saved:"저장했습니다. 비밀번호로 다른 기기에서도 수정할 수 있습니다.", savedBrowser:"저장했습니다. 이 브라우저에서 다시 수정할 수 있습니다.", copied:"참여 링크를 복사했습니다.", organizerCopied:"비공개 관리자 링크를 복사했습니다.", createFailed:"일정을 만들지 못했습니다.", saveFailed:"저장하지 못했습니다. 비밀번호나 인터넷 연결을 확인하세요.", managed:"변경사항을 저장했습니다.", removeConfirm:"{name}의 응답을 삭제할까요?", foundError:"일정을 찾지 못했습니다.", confirmed:"확정", calendarTitle:"확정된 일정"
     }
   };
   const tr = (key, values = {}) => Object.entries(values).reduce((text, [name, value]) => text.replace(`{${name}}`, value), copy[state.lang][key] || key);
@@ -320,6 +320,7 @@
   function renderOrganizer() {
     const visible = Boolean(state.ownerToken); $("organizer-panel").classList.toggle("is-hidden", !visible); $("copy-organizer-link").classList.toggle("is-hidden", !visible); if (!visible) return;
     $("manage-title").value = state.event.title; $("manage-highlight-color").value = highlightColor(); $("toggle-closed").textContent = tr(state.event.is_closed ? "reopenResponses" : "closeResponses");
+    $("manage-start-date").value = state.event.dates[0]; $("manage-end-date").value = state.event.dates.at(-1);
     previewOrganizerColor();
     const dateSelect = $("confirmed-date"), previous = state.event.confirmed_date || dateSelect.value; dateSelect.innerHTML = ""; state.event.dates.forEach((date) => { const option = document.createElement("option"); option.value = date; option.textContent = formatDate(date); dateSelect.appendChild(option); }); dateSelect.value = previous || state.event.dates[0];
     $("confirmed-start").value = formatClock(state.event.confirmed_start_time || state.event.start_time); $("confirmed-end").value = formatClock(state.event.confirmed_end_time || state.event.end_time);
@@ -380,19 +381,43 @@
     button.style.setProperty("--pending-color", color);
     button.style.setProperty("--pending-text", window.schedulerTheme.palette(color).text);
   }
+  async function updateEventDates() {
+    if (state.managing) return;
+    const start = $("manage-start-date").value, end = $("manage-end-date").value;
+    if (!window.schedulerValidation.validDate(start) || !window.schedulerValidation.validDate(end)) return setMessage("organizer-status", tr("dateRange"), true);
+    if (end < start) return setMessage("organizer-status", tr("invalidDate"), true);
+    const dates = datesInRange(start, end);
+    if (dates.length > 31) return setMessage("organizer-status", state.lang === "ko" ? "최대 31일을 선택하세요." : "Choose at most 31 days.", true);
+    try { zones.validateEvent({...state.event, dates}); }
+    catch { return setMessage("organizer-status", state.lang === "ko" ? "이 날짜 범위에는 변환할 수 없는 서머타임 시간이 있습니다." : "This date range includes a daylight-saving time that cannot be converted.", true); }
+    if (dates.join() === state.event.dates.join()) return setMessage("organizer-status", state.lang === "ko" ? "날짜가 변경되지 않았습니다." : "The dates have not changed.");
+    const removed = state.event.dates.filter(date => !dates.includes(date));
+    if (removed.length) {
+      const warning = state.lang === "ko"
+        ? `제외되는 ${removed.length}일의 응답은 삭제됩니다. 나머지 날짜의 응답은 유지합니다. 계속할까요?`
+        : `Availability on ${removed.length} removed ${removed.length === 1 ? "date" : "dates"} will be deleted. Other dates stay intact. Continue?`;
+      if (!confirm(warning)) return;
+    }
+    if (hasChanges() && !confirmDiscard()) return;
+    const saved = await manage("set_dates", {dates});
+    if (!saved) return;
+    state.ownSlots = new Set(responseForName(state.name)?.availability || []);
+    renderSchedule();
+  }
   async function manage(action, payload) {
     if (state.managing) return;
     state.managing = true;
-    const button = action === "set_highlight_color" ? $("update-highlight-color") : null;
+    const button = action === "set_highlight_color" ? $("update-highlight-color") : action === "set_dates" ? $("update-event-dates") : null;
     if (button) { button.disabled = true; button.setAttribute("aria-busy", "true"); button.textContent = state.lang === "ko" ? "저장 중…" : "Saving…"; }
     setMessage("organizer-status");
     try {
       await manageOnline(action, payload);
       await refreshEvent();
-      if (button && highlightColor().toLowerCase() !== payload.highlight_color.toLowerCase()) throw new Error(state.lang === "ko" ? "색상이 저장되지 않았습니다. 다시 시도하세요." : "The color was not saved. Please try again.");
+      if (action === "set_highlight_color" && highlightColor().toLowerCase() !== payload.highlight_color.toLowerCase()) throw new Error(state.lang === "ko" ? "색상이 저장되지 않았습니다. 다시 시도하세요." : "The color was not saved. Please try again.");
       setMessage("organizer-status", tr("managed"));
-    } catch (error) { setMessage("organizer-status", error.message, true); }
-    finally { state.managing = false; if (button) { button.disabled = false; button.removeAttribute("aria-busy"); button.textContent = tr("updateColor"); } }
+      return true;
+    } catch (error) { setMessage("organizer-status", error.message, true); return false; }
+    finally { state.managing = false; if (button) { button.disabled = false; button.removeAttribute("aria-busy"); button.textContent = tr(action === "set_dates" ? "updateDates" : "updateColor"); } }
   }
   async function removeParticipant(response) { if (!confirm(tr("removeConfirm", { name:response.display_name }))) return; await manage("delete_response", { response_id:response.id }); }
   function downloadCalendar() {
@@ -413,6 +438,7 @@
     document.addEventListener("pointerdown", () => { document.documentElement.dataset.input = "pointer"; }, true);
     $("manage-highlight-color").addEventListener("input", previewOrganizerColor);
     $("manage-highlight-color").addEventListener("change", previewOrganizerColor);
+    $("update-event-dates").addEventListener("click", updateEventDates);
     createZonePicker=window.createZonePicker($("time-zone-picker"));
     createZonePicker.setValue(zones.localZone());
     viewZonePicker=window.createZonePicker($("view-zone-picker"),changeViewZone);

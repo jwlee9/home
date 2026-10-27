@@ -52,6 +52,10 @@ begin
   perform pg_temp.must_reject(format('select public.manage_schedule_event(%L,%L,''rename'',''{"title":"Hijacked"}'')',event_id,gen_random_uuid()));
   perform pg_temp.must_reject(format('select public.manage_schedule_event(%L,%L,''confirm'',''{"date":"2026-09-21","start_time":"09:00","end_time":"11:00"}'')',event_id,owner_id));
   perform public.manage_schedule_event(event_id,owner_id,'confirm','{"date":"2026-09-21","start_time":"10:00","end_time":"11:30"}');
+  perform pg_temp.must_reject(format('select public.manage_schedule_event(%L,%L,''set_dates'',''{"dates":["2026-09-22","2026-09-21"]}'')',event_id,owner_id));
+  perform public.manage_schedule_event(event_id,owner_id,'set_dates','{"dates":["2026-09-22","2026-09-23"]}');
+  assert (select dates = '["2026-09-22","2026-09-23"]'::jsonb and confirmed_date is null from public.schedule_events where id = event_id);
+  assert (select availability = '["2026-09-22T11:00"]'::jsonb from public.schedule_responses where id = response_id);
   perform public.manage_schedule_event(event_id,owner_id,'set_closed','{"is_closed":true}');
   perform pg_temp.must_reject(format('select public.save_schedule_response(%L,''Alice'',''[]'',%L)',event_id,edit_id));
   perform public.manage_schedule_event(event_id,owner_id,'set_closed','{"is_closed":false}');

@@ -221,6 +221,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .organizer-person { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; border-bottom: 1px solid var(--line); font-size: 13px; }
 .organizer-color-row { display: grid; grid-template-columns: 80px auto; align-items: end; gap: 10px; margin-top: 12px; }
 .organizer-color-row .button { min-height: 44px; justify-self: start; }
+.organizer-date-editor { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) auto; align-items:end; gap:8px; margin-top:12px; }
+.organizer-date-editor .button { min-height:44px; white-space:nowrap; }
+.organizer-date-note { margin:7px 0 0; }
 .button-danger { min-height: 32px; padding: 5px 9px; color: #a22418; background: #fff; }
 .organizer-panel>.field-note { margin: 0; padding: 0 14px 14px; }
 .closed-notice { margin-top: 18px; padding: 10px 12px; color: #7a2e1f; background: #fff3ef; border: 1px solid #f1c7bb; border-radius: 8px; font-size: 12px; }
@@ -315,6 +318,8 @@ html[data-input="keyboard"] *,html[data-input="keyboard"] *::before { animation:
   .save-area p { font-size: 11px; }
   .confirmation-fields { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .confirmation-fields .field:first-child { grid-column: 1 / -1; }
+  .organizer-date-editor { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .organizer-date-editor .button { grid-column:1 / -1; justify-self:start; }
 }
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { animation: none!important; transition: none!important; scroll-behavior: auto!important; }

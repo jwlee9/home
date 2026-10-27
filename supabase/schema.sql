@@ -169,7 +169,7 @@ $$;
 create or replace function public.manage_schedule_event(
   p_event_id uuid, p_owner_token uuid, p_action text, p_payload jsonb default '{}'::jsonb
 ) returns jsonb language plpgsql security definer set search_path = '' as $$
-declare found_event public.schedule_events; chosen_date date; chosen_start time; chosen_end time;
+declare found_event public.schedule_events; chosen_date date; chosen_start time; chosen_end time; new_dates jsonb; item jsonb; date_text text; previous_date text;
 begin
   select * into found_event from public.schedule_events where id = p_event_id and owner_token = p_owner_token for update;
   if not found then raise exception 'Invalid organizer link.' using errcode = 'P0001'; end if;
@@ -180,6 +180,29 @@ begin
     when 'set_highlight_color' then
       if p_payload->>'highlight_color' is null or (p_payload->>'highlight_color') !~ '^#[0-9A-Fa-f]{6}$' then raise exception 'Invalid highlight color.' using errcode = 'P0001'; end if;
       update public.schedule_events set highlight_color = lower(p_payload->>'highlight_color') where id = p_event_id;
+    when 'set_dates' then
+      new_dates := p_payload->'dates';
+      if new_dates is null or jsonb_typeof(new_dates) <> 'array' or jsonb_array_length(new_dates) not between 1 and 31 then raise exception 'Choose 1–31 valid dates.' using errcode = 'P0001'; end if;
+      previous_date := null;
+      for item in select value from jsonb_array_elements(new_dates) loop
+        date_text := item #>> '{}';
+        if jsonb_typeof(item) <> 'string' or date_text !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+           or to_char(date_text::date, 'YYYY-MM-DD') <> date_text or date_text <= previous_date then
+          raise exception 'Dates must be valid, unique and sorted.' using errcode = 'P0001';
+        end if;
+        previous_date := date_text;
+      end loop;
+      update public.schedule_events set dates = new_dates,
+        confirmed_date = case when confirmed_date is not null and new_dates ? confirmed_date::text then confirmed_date else null end,
+        confirmed_start_time = case when confirmed_date is not null and new_dates ? confirmed_date::text then confirmed_start_time else null end,
+        confirmed_end_time = case when confirmed_date is not null and new_dates ? confirmed_date::text then confirmed_end_time else null end
+      where id = p_event_id;
+      update public.schedule_responses response set availability = coalesce((
+        select jsonb_agg(slot.value order by slot.ordinality)
+        from jsonb_array_elements(response.availability) with ordinality as slot(value, ordinality)
+        where new_dates ? left(slot.value #>> '{}', 10)
+      ), '[]'::jsonb), updated_at = now()
+      where response.event_id = p_event_id;
     when 'set_closed' then
       update public.schedule_events set is_closed = (p_payload->>'is_closed')::boolean where id = p_event_id;
     when 'delete_response' then
