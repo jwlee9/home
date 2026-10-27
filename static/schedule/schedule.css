@@ -129,7 +129,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .people-filter { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 16px; }
 .person-chip { min-height: 32px; padding: 5px 9px; border: 1px solid transparent; border-radius: 7px; color: var(--muted); background: transparent; font-size: 12px; transition: background-color var(--ease),color var(--ease); }
 .person-chip:hover { color: var(--ink); }
-.person-chip.active { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+.person-chip.active { color: var(--highlight-chip-text,var(--accent)); background: var(--highlight-chip-fill,var(--accent-soft)); border-color: transparent; }
 .window-finder { margin:0 0 14px; }
 .window-controls { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
 .window-controls>label { font-size:14px; font-weight:500; }
@@ -251,7 +251,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .slot-details { animation: none; box-shadow: 0 0 0 1px #18202b06,0 8px 24px #18202b16; border-color: #18202b0d; }
 .mode-switch::before { transition: transform 180ms cubic-bezier(.23,1,.32,1); }
 .person-chip { border-color: transparent; background: transparent; }
-.person-chip.active { border-color: transparent; background: var(--accent-soft); }
+.person-chip.active { border-color: transparent; background: var(--highlight-chip-fill,var(--accent-soft)); }
 .organizer-panel { background: #fafbfc; border-color: #18202b0d; }
 .organizer-panel summary { padding: 14px 16px; }
 .organizer-grid { padding-inline: 16px; }
