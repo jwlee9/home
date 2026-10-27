@@ -332,8 +332,6 @@
     const palette=window.schedulerTheme.palette(highlightColor());
     document.documentElement.style.setProperty("--highlight-text",palette.text);
     document.documentElement.style.setProperty("--window-outline",palette.outline);
-    document.documentElement.style.setProperty("--highlight-chip-fill",palette.chipFill);
-    document.documentElement.style.setProperty("--highlight-chip-text",palette.chipText);
     renderViewZone();
     const existing = responseForName(state.name); $("event-name").textContent = state.event.title; $("event-meta").textContent = `${formatDate(state.event.dates[0])}${state.event.dates.length > 1 ? ` — ${formatDate(state.event.dates.at(-1))}` : ""} · ${formatClock(state.event.start_time)}–${formatClock(state.event.end_time)} · ${state.event.timezone}`;
     $("participant-name").value = state.name; $("save-availability").textContent = tr(existing ? "updateTimes" : "saveTimes"); $("closed-notice").classList.toggle("is-hidden", !state.event.is_closed); $("save-name").disabled = state.event.is_closed; $("participant-name").disabled = state.event.is_closed; $("participant-password").disabled = state.event.is_closed;

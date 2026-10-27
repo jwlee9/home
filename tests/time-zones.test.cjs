@@ -56,7 +56,6 @@ test('theme button text and meeting outline contrast',()=>{
     const p=theme.palette(color),base=theme.luminance(theme.rgb(color)),fill=theme.luminance(theme.rgb(color).map(c=>c*.88));
     assert.ok(theme.contrast(base,theme.luminance(theme.rgb(p.text)))>=4.5,color+' button');
     assert.ok(theme.contrast(fill,theme.luminance(theme.rgb(p.outline)))>=3,color+' outline');
-    assert.ok(theme.contrast(theme.luminance(theme.rgb(p.chipFill)),theme.luminance(theme.rgb(p.chipText)))>=4.5,color+' participant chip');
   }
   assert.equal(theme.palette('#ffff00').outline,'#493500');
 });
