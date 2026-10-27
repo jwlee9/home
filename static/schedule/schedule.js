@@ -12,9 +12,12 @@
     event: null, responses: [], name: "", password: "", ownSlots: new Set(),
     view: "mine", person: null, dragging: false, paintValue: true,
     activePointer: null, ownerToken: null, saving: false, creating: false, identifying: false,
-    windowDuration: 0, windowCustom: false, sharedBlocks: [], windowEventId: null
+    windowDuration: 0, windowCustom: false, sharedBlocks: [], windowEventId: null,
+    viewZone: null, zoneEventId: null, projection: null, projectionKey: null
   };
   const $ = (id) => document.getElementById(id);
+  let createZonePicker, viewZonePicker;
+  const zones = window.schedulerZones;
   const copy = {
     en: {
       schedule:"Schedule", newEvent:"NEW EVENT", createSchedule:"Create a schedule", eventName:"Name", eventPlaceholder:"String quartet rehearsal", from:"From", to:"To", dateHint:"Choose the first and last day.", start:"Start", end:"End", interval:"Interval", timeZone:"Time zone", highlightColor:"Highlight", updateColor:"Update color", copyLink:"Copy link", copyOrganizerLink:"Copy organizer link", new:"New", confirmedTime:"CONFIRMED TIME", googleCalendar:"Google Calendar", downloadCalendar:"Download .ics", organizerControls:"Organizer controls", eventSettings:"Event settings", rename:"Rename", confirmTime:"Confirm a time", date:"Date", confirm:"Confirm", clear:"Clear", participants:"Participants", yourName:"Your name", namePlaceholder:"Enter your name", passwordOptional:"Password (optional)", passwordHint:"Set one if you want to edit from another device.", startMarking:"Start marking times", myAvailability:"My availability", group:"Group", saveTimes:"Save available times", updateTimes:"Update available times", closeResponses:"Close responses", reopenResponses:"Reopen responses", closedNotice:"This schedule is closed to responses.", noParticipants:"No responses yet.", remove:"Remove", dateRange:"Choose a date range.", invalidDate:"The end date must be after the start date.", invalidTime:"End time must be later than start time.", enterEventName:"Enter a schedule name.", enterName:"Enter your name first.", passwordShort:"Use at least 6 characters for a password.", passwordNeeded:"Enter the password for this name.", noRecovery:"This entry has no password and cannot be opened in this browser. Ask the organizer to remove it.", marking:"Marking availability as {name}. Drag to add or remove times.", editing:"Editing saved times for {name}.", starting:"Now marking availability as {name}.", groupHelp:"Darker cells have more people available. Tap or hover to see names.", personAvailability:"{name}'s availability.", noAvailability:"No availability has been saved yet.", people:"{count} people", person:"1 person", noOne:"no one has marked this time", saved:"Saved. You can return here and edit from any device with your password.", savedBrowser:"Saved. You can return here and edit from this browser.", copied:"Participant link copied.", organizerCopied:"Private organizer link copied.", createFailed:"Could not create the schedule.", saveFailed:"Could not save. Check your password or connection.", managed:"Changes saved.", removeConfirm:"Remove {name}'s response?", foundError:"This schedule could not be found.", confirmed:"Confirmed", calendarTitle:"Confirmed time"
@@ -38,12 +41,11 @@
   const highlightColor = () => validColor(state.event?.highlight_color) ? state.event.highlight_color : "#2a4997";
   const highlightRgb = () => { const color = highlightColor().slice(1); return [0, 2, 4].map((index) => parseInt(color.slice(index, index + 2), 16)).join(", "); };
   function updateCreateColor() {
-    const color = validColor($("highlight-color").value) ? $("highlight-color").value : "#2a4997", hex = color.slice(1), rgb = [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16));
-    const linear = rgb.map((value) => { const channel = value / 255; return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4; });
-    const luminance = linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
-    const text = luminance > .179 ? "#000000" : "#ffffff", button = $("create-schedule");
-    button.style.setProperty("--create-color", color); button.style.setProperty("--create-text", text);
+    const color = validColor($("highlight-color").value) ? $("highlight-color").value : "#2a4997";
+    const button=$("create-schedule"), palette=window.schedulerTheme.palette(color);
+    button.style.setProperty("--create-color",color);button.style.setProperty("--create-text",palette.text);
   }
+
   const slotKey = (date, minute) => `${date}T${fromMinutes(minute)}`;
   const publicUrl = (slug) => `${location.origin}${location.pathname}?event=${encodeURIComponent(slug)}`;
   const organizerUrl = () => `${publicUrl(state.event.slug)}#manage=${encodeURIComponent(state.ownerToken)}`;
@@ -62,7 +64,7 @@
     document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => { node.placeholder = tr(node.dataset.i18nPlaceholder); });
     $("event-title").placeholder = state.lang === "ko" ? "리허설" : "Rehearsal";
     [15, 30, 60].forEach((minutes) => { $(`slot-length`).querySelector(`option[value="${minutes}"]`).textContent = state.lang === "ko" ? `${minutes}분` : `${minutes} min`; });
-    $("time-zone").querySelector('option[value="Asia/Seoul"]').textContent = state.lang === "ko" ? "한국 표준시 (KST)" : "Korea Standard Time (KST)";
+    createZonePicker?.refresh(); viewZonePicker?.refresh();
     if (state.event) renderSchedule(); else updateDateSummary();
   }
   function show(view) { ["create-view", "schedule-view"].forEach((id) => $(id).classList.toggle("is-hidden", id !== view)); }
@@ -85,7 +87,9 @@
     if (datesInRange(startDate, endDate).length > 31) throw new Error(state.lang === "ko" ? "최대 31일을 선택하세요." : "Choose at most 31 days.");
     if (toMinutes(end) <= toMinutes(start)) throw new Error(tr("invalidTime"));
     if ((toMinutes(end)-toMinutes(start)) % Number($("slot-length").value)) throw new Error(state.lang === "ko" ? "시간 범위가 시간 간격에 맞아야 합니다." : "The time range must contain complete intervals.");
-    return { title, dates:datesInRange(startDate, endDate), start_time:start, end_time:end, slot_minutes:Number($("slot-length").value), timezone:$("time-zone").value, highlight_color:$("highlight-color").value };
+    const event = { title, dates:datesInRange(startDate, endDate), start_time:start, end_time:end, slot_minutes:Number($("slot-length").value), timezone:$("time-zone").value, highlight_color:$("highlight-color").value };
+    try { zones.validateEvent(event); } catch { throw new Error(state.lang === "ko" ? "이 범위에 서머타임으로 반복되거나 존재하지 않는 시간이 있습니다. 날짜 또는 시간을 조정하세요." : "This range includes a repeated or missing daylight-saving time. Adjust the dates or hours."); }
+    return event;
   }
   async function api(method, path, body) {
     const response = await fetch(`${config.supabaseUrl}/rest/v1/${path}`, { method, headers:{ apikey:config.supabaseAnonKey, Authorization:`Bearer ${config.supabaseAnonKey}`, "Content-Type":"application/json", Prefer:"return=representation" }, body:body ? JSON.stringify(body) : undefined });
@@ -117,11 +121,12 @@
     });
   }
   const everyoneAvailable = () => state.lang === "ko" ? "모두 가능" : "Everyone is available";
-  function showSlotDetails(date, minute, names, unanimous = false, cell) {
+  function showSlotDetails(date, minute, names, unanimous = false, cell, interaction = "tap") {
     const node = $("slot-details"), rect = cell.getBoundingClientRect();
+    node.dataset.interaction = interaction;
     const block = state.view === "group" && state.sharedBlocks.find(range => range.date === date && minute >= range.start && minute < range.end);
     const start = block ? block.start : minute, end = block ? block.end : Math.min(minute + Number(state.event.slot_minutes), toMinutes(state.event.end_time));
-    $("slot-details-time").textContent = `${date.replaceAll("-", "/")} · ${formatGridTime(start)}–${formatGridTime(end)}`;
+    $("slot-details-time").textContent = zones.range(date,start,end,state.event.timezone,state.viewZone);
     let duration = "";
     if (block) {
       const total = end - start, hours = Math.floor(total / 60), minutes = total % 60;
@@ -139,37 +144,88 @@
     text.setAttribute("aria-label", fromMinutes(minute)); text.title = fromMinutes(minute);
     label.classList.add("has-time"); label.classList.toggle("partial-hour", minute % 60 !== 0); label.appendChild(text);
   }
+  function projectionFor(zone) {
+    const key=JSON.stringify([state.event.dates,state.event.start_time,state.event.end_time,state.event.slot_minutes,state.event.timezone,zone]);
+    if(state.projectionKey!==key){state.projection=zones.project(state.event,zone);state.projectionKey=key;}
+    return state.projection;
+  }
+  function changeViewZone(zone) {
+    try { projectionFor(zone); state.viewZone=zone; setMessage("zone-notice"); renderSchedule(); }
+    catch { viewZonePicker.setValue(state.viewZone); setMessage("zone-notice",state.lang==="ko"?"이 일정에는 반복되거나 존재하지 않는 시간이 있어 변환할 수 없습니다.":"This schedule includes ambiguous or missing daylight-saving times and cannot be converted.",true); }
+  }
+  function renderViewZone() {
+    if(state.zoneEventId!==state.event.id){state.zoneEventId=state.event.id;state.viewZone=state.event.timezone;}
+    viewZonePicker.setValue(state.viewZone);
+    $("view-zone-label").textContent=state.lang==="ko"?"표시 시간대":"Viewing in";
+    $("view-my-zone").textContent=state.viewZone===state.event.timezone?(state.lang==="ko"?"내 시간대로 보기":"View in my time zone"):(state.lang==="ko"?"일정 시간대로 보기":"View in event time zone");
+    $("view-my-zone").disabled=state.viewZone===state.event.timezone && zones.localZone()===state.event.timezone;
+    $("view-my-zone").classList.toggle("is-hidden",$("view-my-zone").disabled);
+    // Organizer input remains in the source zone, never silently reinterpreted.
+    $("confirmed-date").closest(".organizer-section").querySelector("h2").textContent=tr("confirmTime")+" · "+state.event.timezone;
+  }
   function renderCalendar() {
-    const calendar = $("calendar"), slots = timeSlots(), count = state.responses.length; calendar.innerHTML = ""; calendar.style.setProperty("--days", state.event.dates.length);
-    const corner = document.createElement("div"); corner.className = "corner"; corner.setAttribute("aria-hidden", "true"); calendar.appendChild(corner);
-    state.event.dates.forEach((date, index) => {
-      const header = document.createElement("div"), weekday = document.createElement("span"), strong = document.createElement("strong"), year = document.createElement("span"), day = document.createElement("span");
-      header.className = `day-label${index === 0 ? " day-first" : ""}${index === state.event.dates.length - 1 ? " day-last" : ""}`;
-      weekday.textContent = formatWeekday(date); year.className = "date-year"; year.textContent = `${date.slice(0,4)}/`; day.textContent = date.slice(5).replace("-", "/"); strong.append(year, day); header.append(weekday, strong); calendar.append(header);
+    const calendar=$("calendar"), count=state.responses.length, projection=projectionFor(state.viewZone);
+    const {columns,rows}=projection; calendar.replaceChildren(); calendar.style.setProperty("--days",columns.length);
+    const years = [...new Set(columns.map(column => column.date.slice(0,4)))];
+    $("calendar-years").textContent = years.length === 1 ? years[0] : years[0]+"–"+years.at(-1);
+    $("calendar-prev").setAttribute("aria-label",state.lang === "ko" ? "이전 날짜" : "Earlier dates");
+    $("calendar-next").setAttribute("aria-label",state.lang === "ko" ? "다음 날짜" : "Later dates");
+    const corner=document.createElement("div");corner.className="corner";corner.setAttribute("aria-hidden","true");calendar.append(corner);
+    columns.forEach((column,index)=>{
+      const {date}=column, header=document.createElement("div"), weekday=document.createElement("span"), strong=document.createElement("strong");
+      header.className="day-label"+(index===0?" day-first":"")+(index===columns.length-1?" day-last":"");
+      weekday.textContent=formatWeekday(date);strong.textContent=date.slice(5).replace("-","/");header.append(weekday,strong);header.setAttribute("aria-label",formatDate(date));
+      if(column.split){const offset=document.createElement("span");offset.className="day-offset";offset.textContent="UTC"+(column.offset>=0?"+":"−")+fromMinutes(Math.abs(column.offset));header.append(offset);}
+      calendar.append(header);
     });
-    const selected = currentSlots();
-    slots.forEach((minute, index) => {
-      const slotEnd = minute + Number(state.event.slot_minutes), divider = slotEnd % 60 === 0 ? "hour-end" : slotEnd % 30 === 0 ? "half-hour-end" : "minor-end";
-      const label = document.createElement("div"); label.className = "time-label";
-      const offHourGrid = toMinutes(state.event.start_time) % Number(state.event.slot_minutes) !== 0;
-      if (index === 0 || minute % 60 === 0 || (offHourGrid && (minute - slots[0]) % 60 === 0)) labelHour(label, minute);
-      calendar.appendChild(label);
-      state.event.dates.forEach((date, dayIndex) => {
-        const key = slotKey(date, minute), cell = document.createElement("button"); cell.type = "button"; cell.className = `slot ${divider}`; cell.dataset.key = key; cell.setAttribute("aria-label", `${formatDate(date)} ${fromMinutes(minute)}`);
-        if (dayIndex === 0) cell.classList.add("day-first");
-        if (state.view === "mine") { if (selected.has(key)) cell.classList.add("selected"); cell.setAttribute("aria-pressed", selected.has(key)); bindCell(cell); }
-        if (state.view === "person") { if (selected.has(key)) cell.classList.add("person"); cell.classList.add("group"); const names = selected.has(key) ? [state.person] : []; cell.addEventListener("click", () => showSlotDetails(date, minute, names, false, cell)); cell.addEventListener("focus", () => showSlotDetails(date, minute, names, false, cell)); }
-        if (state.view === "group") {
-          const names = state.responses.filter((response) => response.availability.includes(key)).map((response) => response.display_name), ratio = count ? names.length / count : 0, unanimous = count > 1 && names.length === count;
-          cell.classList.add("group"); cell.classList.toggle("unanimous", unanimous); cell.style.backgroundColor = names.length ? `rgba(${highlightRgb()}, ${0.16 + ratio * 0.7})` : "";
-          if (unanimous) cell.setAttribute("aria-label", `${cell.getAttribute("aria-label")} — ${everyoneAvailable()}`);
-          cell.addEventListener("click", () => showSlotDetails(date, minute, names, unanimous, cell)); cell.addEventListener("focus", () => showSlotDetails(date, minute, names, unanimous, cell)); cell.addEventListener("pointerenter", (event) => { if (event.pointerType === "mouse") showSlotDetails(date, minute, names, unanimous, cell); });
+    const selected=currentSlots(),step=Number(state.event.slot_minutes);
+    rows.forEach((row,rowIndex)=>{
+      const blank=row.cells.every(cell=>!cell), height=blank?18:25*(row.end-row.start)/step;
+      const label=document.createElement("div");label.className="time-label";label.style.height=height+"px";
+      if(blank){label.textContent="⋮";label.setAttribute("aria-label","No scheduled times");}
+      else if(rowIndex===0 || row.start%60===0 || (row.start-rows[0].start)%60===0 || rows[rowIndex-1]?.cells.every(cell=>!cell))labelHour(label,row.start);
+      calendar.append(label);
+      row.cells.forEach((segment,colIndex)=>{
+        if(!segment){const empty=document.createElement("div");empty.className="slot-empty";empty.style.height=height+"px";empty.setAttribute("aria-hidden","true");calendar.append(empty);return;}
+        const {key,sourceDate:date,sourceMinute:minute}=segment,cell=document.createElement("button");
+        const divider=row.end%60===0?"hour-end":row.end%30===0?"half-hour-end":"minor-end";
+        cell.type="button";cell.className="slot "+divider;cell.dataset.key=key;cell.dataset.row=rowIndex;cell.dataset.col=colIndex;cell.style.height=height+"px";
+        cell.setAttribute("aria-label",formatDate(columns[colIndex].date)+" "+fromMinutes(row.start)+"–"+fromMinutes(row.end)+" "+state.viewZone+(columns[colIndex].split?" UTC"+(columns[colIndex].offset>=0?"+":"−")+fromMinutes(Math.abs(columns[colIndex].offset)):""));
+        if(colIndex===0)cell.classList.add("day-first");
+        if(state.view==="mine"){if(selected.has(key))cell.classList.add("selected");cell.setAttribute("aria-pressed",selected.has(key));bindCell(cell);}
+        else{
+          const names=state.view==="person"?(selected.has(key)?[state.person]:[]):state.responses.filter(response=>response.availability.includes(key)).map(response=>response.display_name);
+          const unanimous=state.view==="group"&&count>1&&names.length===count;
+          cell.classList.add("group");
+          if(state.view==="person"){if(selected.has(key))cell.classList.add("person");}
+          else {cell.classList.toggle("unanimous",unanimous);cell.style.backgroundColor=names.length?"rgba("+highlightRgb()+", "+(.16+names.length/count*.7)+")":"";}
+          if(unanimous)cell.setAttribute("aria-label",cell.getAttribute("aria-label")+" — "+everyoneAvailable());
+          cell.addEventListener("click",event=>showSlotDetails(date,minute,names,unanimous,cell,event.pointerType==="mouse"?"hover":event.detail===0?"focus":"tap"));
+          cell.addEventListener("focus",()=>{if(cell.matches(":focus-visible"))showSlotDetails(date,minute,names,unanimous,cell,"focus");});
+          cell.addEventListener("blur",()=>{if($("slot-details").dataset.interaction==="focus")$("slot-details").classList.add("is-hidden");});
+          cell.addEventListener("pointerenter",event=>{if(event.pointerType==="mouse")showSlotDetails(date,minute,names,unanimous,cell,"hover");});
+          cell.addEventListener("pointerleave",event=>{if(event.pointerType==="mouse"&&$("slot-details").dataset.interaction==="hover")$("slot-details").classList.add("is-hidden");});
         }
-        calendar.appendChild(cell);
+        calendar.append(cell);
       });
     });
-    const endLabel = document.createElement("div"); endLabel.className = "time-label time-end"; labelHour(endLabel, toMinutes(state.event.end_time)); calendar.appendChild(endLabel);
-    state.event.dates.forEach((date, index) => { const foot = document.createElement("div"); foot.className = `calendar-foot${index === 0 ? " day-first" : ""}${index === state.event.dates.length - 1 ? " day-last" : ""}`; calendar.appendChild(foot); });
+    const endLabel=document.createElement("div");endLabel.className="time-label time-end";labelHour(endLabel,projection.end);calendar.append(endLabel);
+    columns.forEach((column,index)=>{const foot=document.createElement("div");foot.className="calendar-foot"+(index===0?" day-first":"")+(index===columns.length-1?" day-last":"");calendar.append(foot);});
+    requestAnimationFrame(syncCalendarNavigation);
+  }
+  function syncCalendarNavigation() {
+    const wrap = $("calendar-scroll"), max = wrap.scrollWidth - wrap.clientWidth;
+    $("calendar-scroll-controls").classList.toggle("is-hidden",max < 2);
+    $("calendar-prev").disabled = wrap.scrollLeft < 2;
+    $("calendar-next").disabled = wrap.scrollLeft >= max - 2;
+  }
+  function scrollCalendar(direction) {
+    const wrap = $("calendar-scroll"), day = $("calendar").querySelector(".day-label");
+    if (!day) return;
+    const width = day.getBoundingClientRect().width;
+    const rail = $("calendar").querySelector(".corner").getBoundingClientRect().width;
+    const step = Math.max(1,Math.floor((wrap.clientWidth-rail)/width)-1)*width;
+    wrap.scrollBy({left:direction*step,behavior:"auto"});
   }
   function renderSharedWindows() {
     const visible = state.view === "group";
@@ -206,13 +262,16 @@
     highlightSharedBlocks();
   }
   function highlightSharedBlocks() {
-    const step = Number(state.event.slot_minutes);
-    $("calendar").querySelectorAll(".slot").forEach(cell => {
-      const [date,time] = cell.dataset.key.split("T"), minute = toMinutes(time);
-      const block = state.sharedBlocks.find(range => date === range.date && minute >= range.start && minute < range.end);
-      cell.classList.toggle("window-hit", Boolean(block));
-      cell.classList.toggle("window-start", Boolean(block && minute === block.start));
-      cell.classList.toggle("window-end", Boolean(block && minute + step === block.end));
+    const cells=[...$("calendar").querySelectorAll(".slot")],positions=new Map(cells.map(cell=>[cell.dataset.col+"/"+cell.dataset.row,cell]));
+    cells.forEach(cell=>{
+      const [date,time]=cell.dataset.key.split("T"),minute=toMinutes(time);
+      const block=state.sharedBlocks.find(range=>range.date===date&&minute>=range.start&&minute<range.end);
+      cell.classList.toggle("window-hit",Boolean(block));cell.dataset.windowBlock=block?block.date+"/"+block.start:"";
+    });
+    cells.forEach(cell=>{
+      const block=cell.dataset.windowBlock,row=Number(cell.dataset.row),col=cell.dataset.col;
+      cell.classList.toggle("window-start",Boolean(block&&positions.get(col+"/"+(row-1))?.dataset.windowBlock!==block));
+      cell.classList.toggle("window-end",Boolean(block&&positions.get(col+"/"+(row+1))?.dataset.windowBlock!==block));
     });
     $("slot-details").classList.add("is-hidden");
   }
@@ -230,7 +289,7 @@
     if (dirty) { $("save-area").classList.remove("is-saved"); setMessage("save-status", state.lang === "ko" ? "저장하지 않은 변경사항" : "Unsaved changes"); }
   }
   function cellAtPointer(event) { return document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".slot[data-key]"); }
-  function paintCell(cell) { if (!cell || !state.dragging || state.saving) return; const key = cell.dataset.key; if (state.paintValue) state.ownSlots.add(key); else state.ownSlots.delete(key); cell.classList.toggle("selected", state.paintValue); cell.setAttribute("aria-pressed", state.paintValue); setMessage("save-status"); syncSave(); }
+  function paintCell(cell) { if (!cell || !state.dragging || state.saving) return; const key = cell.dataset.key; if (state.paintValue) state.ownSlots.add(key); else state.ownSlots.delete(key); $("calendar").querySelectorAll('.slot[data-key="'+key+'"]').forEach(piece=>{piece.classList.toggle("selected", state.paintValue); piece.setAttribute("aria-pressed", state.paintValue);}); setMessage("save-status"); syncSave(); }
   function beginPainting(event, cell) { if (!state.name) { setMessage("identity-status", tr("enterName"), true); return $("participant-name").focus(); } if (state.event.is_closed || state.saving || event.button > 0) return; event.preventDefault(); state.dragging = true; state.activePointer = event.type === "pointerdown" ? event.pointerId : null; state.paintValue = !state.ownSlots.has(cell.dataset.key); paintCell(cell); if (event.type === "pointerdown") cell.setPointerCapture?.(event.pointerId); }
   function bindCell(cell) { cell.addEventListener("pointerdown", (event) => beginPainting(event, cell)); cell.addEventListener("click", (event) => { if (event.detail === 0) { beginPainting(event, cell); state.dragging = false; state.activePointer = null; } }); }
   function onPointerMove(event) { if (!state.dragging || (state.activePointer !== null && event.pointerId !== state.activePointer)) return; event.preventDefault(); paintCell(cellAtPointer(event)); }
@@ -244,6 +303,8 @@
   function syncView() {
     const mine = state.view === "mine"; $("mode-mine").classList.toggle("active", mine); $("mode-group").classList.toggle("active", !mine); $("mode-mine").setAttribute("aria-selected", mine); $("mode-group").setAttribute("aria-selected", !mine); $("save-area").classList.toggle("is-hidden", !mine); $("group-summary").classList.toggle("is-hidden", mine); $("slot-details").classList.add("is-hidden");
     syncModeIndicator();
+    $("grid-instruction").classList.toggle("is-hidden",!mine && state.responses.length>0);
+    $("availability-options").classList.toggle("is-hidden",mine);
     if (mine) $("grid-instruction").textContent = state.name ? tr("marking", { name:state.name }) : tr("enterName");
     else if (state.view === "person") $("grid-instruction").textContent = tr("personAvailability", { name:state.person });
     else $("grid-instruction").textContent = state.responses.length ? (state.lang === "ko" ? "칸을 누르거나 마우스를 올리면 가능한 사람을 볼 수 있습니다." : "Tap or hover over a time to see who is available.") : tr("noAvailability");
@@ -252,13 +313,14 @@
   function renderConfirmed() {
     const banner = $("confirmed-banner"), event = state.event;
     if (!event.confirmed_date) return banner.classList.add("is-hidden");
-    banner.classList.remove("is-hidden"); $("confirmed-text").textContent = `${formatDate(event.confirmed_date)} · ${formatClock(event.confirmed_start_time)}–${formatClock(event.confirmed_end_time)}`;
+    banner.classList.remove("is-hidden"); $("confirmed-text").textContent = zones.range(event.confirmed_date,toMinutes(event.confirmed_start_time),toMinutes(event.confirmed_end_time),event.timezone,state.viewZone);
     const dates = `${event.confirmed_date.replaceAll("-", "")}T${formatClock(event.confirmed_start_time).replace(":", "")}00/${event.confirmed_date.replaceAll("-", "")}T${formatClock(event.confirmed_end_time).replace(":", "")}00`;
     $("google-calendar").href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${dates}&ctz=${encodeURIComponent(event.timezone)}`;
   }
   function renderOrganizer() {
     const visible = Boolean(state.ownerToken); $("organizer-panel").classList.toggle("is-hidden", !visible); $("copy-organizer-link").classList.toggle("is-hidden", !visible); if (!visible) return;
     $("manage-title").value = state.event.title; $("manage-highlight-color").value = highlightColor(); $("toggle-closed").textContent = tr(state.event.is_closed ? "reopenResponses" : "closeResponses");
+    previewOrganizerColor();
     const dateSelect = $("confirmed-date"), previous = state.event.confirmed_date || dateSelect.value; dateSelect.innerHTML = ""; state.event.dates.forEach((date) => { const option = document.createElement("option"); option.value = date; option.textContent = formatDate(date); dateSelect.appendChild(option); }); dateSelect.value = previous || state.event.dates[0];
     $("confirmed-start").value = formatClock(state.event.confirmed_start_time || state.event.start_time); $("confirmed-end").value = formatClock(state.event.confirmed_end_time || state.event.end_time);
     const people = $("organizer-people"); people.innerHTML = ""; if (!state.responses.length) people.textContent = tr("noParticipants");
@@ -266,6 +328,10 @@
   }
   function renderSchedule() {
     document.documentElement.style.setProperty("--highlight", highlightColor());
+    const palette=window.schedulerTheme.palette(highlightColor());
+    document.documentElement.style.setProperty("--highlight-text",palette.text);
+    document.documentElement.style.setProperty("--window-outline",palette.outline);
+    renderViewZone();
     const existing = responseForName(state.name); $("event-name").textContent = state.event.title; $("event-meta").textContent = `${formatDate(state.event.dates[0])}${state.event.dates.length > 1 ? ` — ${formatDate(state.event.dates.at(-1))}` : ""} · ${formatClock(state.event.start_time)}–${formatClock(state.event.end_time)} · ${state.event.timezone}`;
     $("participant-name").value = state.name; $("save-availability").textContent = tr(existing ? "updateTimes" : "saveTimes"); $("closed-notice").classList.toggle("is-hidden", !state.event.is_closed); $("save-name").disabled = state.event.is_closed; $("participant-name").disabled = state.event.is_closed; $("participant-password").disabled = state.event.is_closed;
     syncView(); renderPeople(); renderCalendar(); renderSharedWindows(); renderConfirmed(); renderOrganizer(); syncSave();
@@ -307,7 +373,27 @@
     try { await saveOnline(); state.password = ""; await refreshEvent(); storage.setItem(`scheduler-name-${state.event.id}`, state.name); state.saving = false; syncSave(); setMessage("save-status", state.lang === "ko" ? "저장됨" : "Saved"); $("save-area").classList.add("is-saved"); }
     catch (error) { state.saving = false; syncSave(); setMessage("save-status", error.message || tr("saveFailed"), true); }
   }
-  async function manage(action, payload) { try { await manageOnline(action, payload); await refreshEvent(); setMessage("organizer-status", tr("managed")); } catch (error) { setMessage("organizer-status", error.message, true); } }
+  function previewOrganizerColor() {
+    const color = $("manage-highlight-color").value;
+    if (!validColor(color)) return;
+    const button = $("update-highlight-color");
+    button.style.setProperty("--pending-color", color);
+    button.style.setProperty("--pending-text", window.schedulerTheme.palette(color).text);
+  }
+  async function manage(action, payload) {
+    if (state.managing) return;
+    state.managing = true;
+    const button = action === "set_highlight_color" ? $("update-highlight-color") : null;
+    if (button) { button.disabled = true; button.setAttribute("aria-busy", "true"); button.textContent = state.lang === "ko" ? "저장 중…" : "Saving…"; }
+    setMessage("organizer-status");
+    try {
+      await manageOnline(action, payload);
+      await refreshEvent();
+      if (button && highlightColor().toLowerCase() !== payload.highlight_color.toLowerCase()) throw new Error(state.lang === "ko" ? "색상이 저장되지 않았습니다. 다시 시도하세요." : "The color was not saved. Please try again.");
+      setMessage("organizer-status", tr("managed"));
+    } catch (error) { setMessage("organizer-status", error.message, true); }
+    finally { state.managing = false; if (button) { button.disabled = false; button.removeAttribute("aria-busy"); button.textContent = tr("updateColor"); } }
+  }
   async function removeParticipant(response) { if (!confirm(tr("removeConfirm", { name:response.display_name }))) return; await manage("delete_response", { response_id:response.id }); }
   function downloadCalendar() {
     const event = state.event, date = event.confirmed_date.replaceAll("-", ""), start = formatClock(event.confirmed_start_time).replace(":", ""), end = formatClock(event.confirmed_end_time).replace(":", "");
@@ -316,8 +402,21 @@
     const url = URL.createObjectURL(new Blob([ics], { type:"text/calendar;charset=utf-8" })), link = document.createElement("a"); link.href = url; link.download = `${event.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "schedule"}.ics`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   function confirmDiscard() { return !hasChanges() || confirm(state.lang === "ko" ? "저장하지 않은 변경사항을 버릴까요?" : "Discard unsaved changes?"); }
-  function resetToCreate() { if (state.saving || state.identifying || !confirmDiscard()) return; state.event = null; history.replaceState({}, "", location.pathname); $("create-form").reset(); $("start-time").value = "10:00"; $("end-time").value = "22:00"; updateCreateColor(); updateDateSummary(); setMessage("create-error"); show("create-view"); }
+  function resetToCreate() { if (state.saving || state.identifying || !confirmDiscard()) return; state.event = null; history.replaceState({}, "", location.pathname); $("create-form").reset(); createZonePicker.setValue(zones.localZone()); $("start-time").value = "10:00"; $("end-time").value = "22:00"; updateCreateColor(); updateDateSummary(); setMessage("create-error"); show("create-view"); }
   function setup() {
+    $("calendar-prev").addEventListener("click",()=>scrollCalendar(-1));
+    $("calendar-next").addEventListener("click",()=>scrollCalendar(1));
+    $("calendar-scroll").addEventListener("scroll",()=>{syncCalendarNavigation();$("slot-details").classList.add("is-hidden");},{passive:true});
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(syncCalendarNavigation).observe($("calendar-scroll"));
+    else window.addEventListener("resize",syncCalendarNavigation);
+    document.addEventListener("keydown", () => { document.documentElement.dataset.input = "keyboard"; }, true);
+    document.addEventListener("pointerdown", () => { document.documentElement.dataset.input = "pointer"; }, true);
+    $("manage-highlight-color").addEventListener("input", previewOrganizerColor);
+    $("manage-highlight-color").addEventListener("change", previewOrganizerColor);
+    createZonePicker=window.createZonePicker($("time-zone-picker"));
+    createZonePicker.setValue(zones.localZone());
+    viewZonePicker=window.createZonePicker($("view-zone-picker"),changeViewZone);
+    $("view-my-zone").addEventListener("click",()=>{changeViewZone(state.viewZone===state.event.timezone?zones.localZone():state.event.timezone);viewZonePicker.close();$("view-zone-trigger").focus();});
     $("window-duration").addEventListener("change", () => {
       state.windowCustom = $("window-duration").value === "custom";
       if (!state.windowCustom) state.windowDuration = Number($("window-duration").value);
@@ -334,6 +433,7 @@
     $("highlight-color").addEventListener("input", updateCreateColor);
     $("highlight-color").addEventListener("change", updateCreateColor);
     $("slot-details-close").addEventListener("click", () => $("slot-details").classList.add("is-hidden"));
+    document.addEventListener("pointerdown",event=>{if(!event.target.closest('.slot,#slot-details'))$("slot-details").classList.add("is-hidden");});
     document.addEventListener("keydown", (event) => { if (event.key === "Escape") $("slot-details").classList.add("is-hidden"); });
     window.addEventListener("scroll", () => $("slot-details").classList.add("is-hidden"), { passive:true });
     window.addEventListener("resize", () => $("slot-details").classList.add("is-hidden"));
