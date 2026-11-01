@@ -10,7 +10,7 @@
   const state = {
     lang: storage.getItem("scheduler-language") === "en" ? "en" : "ko",
     event: null, responses: [], name: "", password: "", ownSlots: new Set(),
-    view: "mine", person: null, dragging: false, paintValue: true,
+    view: "mine", person: null, selectedPeople: new Set(), dragging: false, paintValue: true,
     activePointer: null, ownerToken: null, saving: false, creating: false, identifying: false,
     windowDuration: 0, windowCustom: false, sharedBlocks: [], windowEventId: null,
     viewZone: null, zoneEventId: null, projection: null, projectionKey: null
@@ -107,6 +107,7 @@
     storage.setItem(tokenKey(), result.edit_token); return result;
   }
   const responseForName = (name) => state.responses.find((response) => response.display_name === name);
+  const filteredResponses = () => state.selectedPeople.size ? state.responses.filter(response => state.selectedPeople.has(response.display_name)) : state.responses;
   function timeSlots() { const slots = []; for (let minute = toMinutes(state.event.start_time); minute < toMinutes(state.event.end_time); minute += Number(state.event.slot_minutes)) slots.push(minute); return slots; }
   function currentSlots() { if (state.view === "mine") return state.ownSlots; if (state.view === "person") return new Set(responseForName(state.person)?.availability || []); return new Set(); }
 
@@ -114,10 +115,16 @@
     const people = $("people-filter"); people.innerHTML = "";
     if (state.view === "mine") return people.classList.add("is-hidden");
     people.classList.remove("is-hidden");
+    state.selectedPeople = new Set([...state.selectedPeople].filter(name => responseForName(name)));
     [{ id:null, label:state.lang === "ko" ? "모두" : "Everyone" }, ...state.responses.map((response) => ({ id:response.display_name, label:response.display_name }))].forEach((choice) => {
-      const button = document.createElement("button"), selected = (state.view === "group" && !choice.id) || (state.view === "person" && choice.id === state.person);
-      button.type = "button"; button.className = `person-chip${selected ? " active" : ""}`; button.textContent = choice.label;
-      button.addEventListener("click", () => { state.view = choice.id ? "person" : "group"; state.person = choice.id; renderSchedule(); }); people.appendChild(button);
+      const button = document.createElement("button"), selected = choice.id ? state.selectedPeople.has(choice.id) : !state.selectedPeople.size;
+      button.type = "button"; button.className = `person-chip${selected ? " active" : ""}`; button.textContent = choice.label; button.setAttribute("aria-pressed", selected);
+      button.addEventListener("click", () => {
+        if (!choice.id) state.selectedPeople.clear();
+        else if (state.selectedPeople.has(choice.id)) state.selectedPeople.delete(choice.id);
+        else state.selectedPeople.add(choice.id);
+        renderSchedule();
+      }); people.appendChild(button);
     });
   }
   const everyoneAvailable = () => state.lang === "ko" ? "모두 가능" : "Everyone is available";
@@ -164,7 +171,7 @@
     $("confirmed-date").closest(".organizer-section").querySelector("h2").textContent=tr("confirmTime")+" · "+state.event.timezone;
   }
   function renderCalendar() {
-    const calendar=$("calendar"), count=state.responses.length, projection=projectionFor(state.viewZone);
+    const calendar=$("calendar"), participants=filteredResponses(), count=participants.length, projection=projectionFor(state.viewZone);
     const {columns,rows}=projection; calendar.replaceChildren(); calendar.style.setProperty("--days",columns.length);
     const years = [...new Set(columns.map(column => column.date.slice(0,4)))];
     $("calendar-years").textContent = years.length === 1 ? years[0] : years[0]+"–"+years.at(-1);
@@ -194,11 +201,15 @@
         if(colIndex===0)cell.classList.add("day-first");
         if(state.view==="mine"){if(selected.has(key))cell.classList.add("selected");cell.setAttribute("aria-pressed",selected.has(key));bindCell(cell);}
         else{
-          const names=state.view==="person"?(selected.has(key)?[state.person]:[]):state.responses.filter(response=>response.availability.includes(key)).map(response=>response.display_name);
+          const names=state.view==="person"?(selected.has(key)?[state.person]:[]):participants.filter(response=>response.availability.includes(key)).map(response=>response.display_name);
           const unanimous=state.view==="group"&&count>1&&names.length===count;
           cell.classList.add("group");
           if(state.view==="person"){if(selected.has(key))cell.classList.add("person");}
-          else {cell.classList.toggle("unanimous",unanimous);cell.style.backgroundColor=names.length?"rgba("+highlightRgb()+", "+(.16+names.length/count*.7)+")":"";}
+          else {
+            cell.classList.toggle("unanimous",unanimous);
+            const matching = state.selectedPeople.size ? names.length === count : names.length > 0;
+            cell.style.backgroundColor = matching ? "rgba("+highlightRgb()+", "+(state.selectedPeople.size ? .72 : .16+names.length/count*.7)+")" : "";
+          }
           if(unanimous)cell.setAttribute("aria-label",cell.getAttribute("aria-label")+" — "+everyoneAvailable());
           cell.addEventListener("click",event=>showSlotDetails(date,minute,names,unanimous,cell,event.pointerType==="mouse"?"hover":event.detail===0?"focus":"tap"));
           cell.addEventListener("focus",()=>{if(cell.matches(":focus-visible"))showSlotDetails(date,minute,names,unanimous,cell,"focus");});
@@ -249,13 +260,13 @@
     $("window-custom-label").classList.toggle("is-hidden", !state.windowCustom);
     const anyLength = !state.windowCustom && state.windowDuration === 0;
     const valid = Number.isInteger(state.windowDuration) && state.windowDuration >= step && state.windowDuration <= max && state.windowDuration % step === 0;
-    if (!anyLength && valid) state.sharedBlocks = window.findSharedWindows(state.event, state.responses, state.windowDuration);
+    if (!anyLength && valid) state.sharedBlocks = window.findSharedWindows(state.event, filteredResponses(), state.windowDuration);
     let message = "";
     if (!anyLength) {
       if (max < step) message = ko ? `이 일정의 시간 범위가 ${step}분보다 짧습니다.` : `This schedule is shorter than one ${step}-minute slot.`;
       else if (!valid) message = ko ? `${step}분 단위로 ${step}–${Math.floor(max / step) * step}분을 입력하세요.` : `Use ${step}-minute steps, from ${step} to ${Math.floor(max / step) * step} min.`;
-      else if (!state.responses.length) message = ko ? "아직 저장된 응답이 없습니다." : "No saved responses yet.";
-      else if (!state.sharedBlocks.length) message = ko ? `모두 가능한 연속 ${state.windowDuration}분이 없습니다.` : `No shared ${state.windowDuration}-minute block.`;
+      else if (!filteredResponses().length) message = ko ? "아직 저장된 응답이 없습니다." : "No saved responses yet.";
+      else if (!state.sharedBlocks.length) message = ko ? `선택한 사람들이 모두 가능한 연속 ${state.windowDuration}분이 없습니다.` : `No shared ${state.windowDuration}-minute block for the selected people.`;
     }
     setMessage("window-message", message, !anyLength && !valid);
     custom.setAttribute("aria-invalid", state.windowCustom && !valid);
@@ -308,7 +319,7 @@
     if (mine) $("grid-instruction").textContent = state.name ? tr("marking", { name:state.name }) : tr("enterName");
     else if (state.view === "person") $("grid-instruction").textContent = tr("personAvailability", { name:state.person });
     else $("grid-instruction").textContent = state.responses.length ? (state.lang === "ko" ? "칸을 누르거나 마우스를 올리면 가능한 사람을 볼 수 있습니다." : "Tap or hover over a time to see who is available.") : tr("noAvailability");
-    if (!mine) $("group-summary").textContent = state.responses.length === 1 ? tr("person") : tr("people", { count:state.responses.length });
+    if (!mine) $("group-summary").textContent = filteredResponses().length === 1 ? tr("person") : tr("people", { count:filteredResponses().length });
   }
   function renderConfirmed() {
     const banner = $("confirmed-banner"), event = state.event;
@@ -342,13 +353,13 @@
     try {
       const data = await loadOnline(slug); state.event = data.event; state.responses = data.responses || [];
       const hashToken = new URLSearchParams(location.hash.slice(1)).get("manage"); state.ownerToken = hashToken || storage.getItem(`scheduler-owner-${state.event.id}`); if (state.ownerToken) storage.setItem(`scheduler-owner-${state.event.id}`, state.ownerToken);
-      state.name = storage.getItem(`scheduler-name-${state.event.id}`) || storage.getItem(`moilsigan-name-${state.event.id}`) || ""; state.ownSlots = new Set(responseForName(state.name)?.availability || []); state.view = "mine"; show("schedule-view"); renderSchedule();
+      state.name = storage.getItem(`scheduler-name-${state.event.id}`) || storage.getItem(`moilsigan-name-${state.event.id}`) || ""; state.ownSlots = new Set(responseForName(state.name)?.availability || []); state.selectedPeople.clear(); state.view = "mine"; show("schedule-view"); renderSchedule();
     } catch { show("create-view"); setMessage("create-error", tr("foundError"), true); }
   }
   async function createEvent() {
     if (state.creating) return;
     const button = $("create-schedule"); state.creating = true; button.disabled = true; button.setAttribute("aria-busy", "true"); button.textContent = state.lang === "ko" ? "만드는 중…" : "Creating…";
-    setMessage("create-error"); try { const result = await createOnline(eventFromForm()); state.event = result.event; state.ownerToken = result.owner_token; storage.setItem(`scheduler-owner-${state.event.id}`, state.ownerToken); history.replaceState({}, "", organizerUrl()); state.responses = []; state.name = ""; state.password = ""; state.ownSlots = new Set(); state.view = "mine"; show("schedule-view"); renderSchedule(); } catch (error) { setMessage("create-error", error.message || tr("createFailed"), true); }
+    setMessage("create-error"); try { const result = await createOnline(eventFromForm()); state.event = result.event; state.ownerToken = result.owner_token; storage.setItem(`scheduler-owner-${state.event.id}`, state.ownerToken); history.replaceState({}, "", organizerUrl()); state.responses = []; state.name = ""; state.password = ""; state.ownSlots = new Set(); state.selectedPeople.clear(); state.view = "mine"; show("schedule-view"); renderSchedule(); } catch (error) { setMessage("create-error", error.message || tr("createFailed"), true); }
     finally { state.creating = false; button.disabled = false; button.setAttribute("aria-busy", "false"); button.textContent = tr("createSchedule"); }
   }
   async function beginName() {
