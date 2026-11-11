@@ -7,10 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Simple scheduling service for groups">
     <meta property="og:title" content="Schedule · Jaewon Lee">
-    <meta property="og:description" content="Scheduler!!">
+    <meta property="og:description" content="Simple scheduling service for groups">
     <title>Schedule · Jaewon Lee</title>
     <link rel="icon" type="image/svg+xml" href="../banana.svg">
-    <link rel="stylesheet" href="schedule.css?v=20261027-2">
+    <link rel="stylesheet" href="schedule.css?v=20261111-1">
   </head>
   <body>
     <main class="shell">
@@ -59,7 +59,7 @@
         </header>
 
         <section id="confirmed-banner" class="confirmed-banner is-hidden">
-          <div><span data-i18n="confirmedTime">CONFIRMED TIME</span><strong id="confirmed-text"></strong></div>
+          <div><span data-i18n="confirmedTime">Confirmed time</span><strong id="confirmed-text"></strong></div>
           <div class="confirmed-actions"><a class="button button-quiet" id="google-calendar" target="_blank" rel="noopener" data-i18n="googleCalendar">Google Calendar</a><button class="button button-quiet" id="download-ics" type="button" data-i18n="downloadCalendar">Download .ics</button></div>
         </section>
 
@@ -88,7 +88,7 @@
               <div class="inline-actions"><button class="button button-primary" id="confirm-time" type="button" data-i18n="confirm">Confirm</button><button class="button" id="clear-confirmed" type="button" data-i18n="clear">Clear</button></div>
             </section>
             <section class="organizer-section organizer-participants">
-              <h2 data-i18n="participants">Participants</h2>
+              <div class="organizer-section-heading"><h2 data-i18n="participants">Participants</h2><button class="button button-quiet" id="export-json" type="button" data-i18n="exportJson">Export JSON</button></div>
               <div id="organizer-people"></div>
             </section>
           </div>
@@ -151,8 +151,9 @@
     <script src="validation.js"></script>
     <script src="time-zones.js"></script>
     <script src="theme.js"></script>
+    <script src="export.js"></script>
     <script src="zone-picker.js"></script>
-    <script src="schedule.js?v=20261101-1"></script>
+    <script src="schedule.js?v=20261111-1"></script>
     <script src="date-picker.js"></script>
   </body>
 </html>

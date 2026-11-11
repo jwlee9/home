@@ -2,3 +2,7 @@
 public/
 resources/
 .hugo_build.lock
+
+# Local-only scheduler fixture for reviewing changes before deployment
+static/schedule/preview.html
+static/schedule/preview-data.js

@@ -1,6 +1,8 @@
 :root {
   --ink: #202631; --muted: #737b87; --line: #e1e5eb; --wash: #f6f7f9;
-  --accent: #2a4997; --accent-soft: #edf1fa; --highlight: #2a4997; --paper: #fff;
+  --highlight: #2a4997; --accent: var(--highlight);
+  --accent-soft: color-mix(in srgb,var(--highlight) 12%,#fff);
+  --accent-ink: color-mix(in srgb,var(--highlight) 42%,#000); --paper: #fff;
   --ease: 160ms cubic-bezier(.23,1,.32,1);
   --control-shadow: 0 1px 2px #18202b06;
 }
@@ -9,7 +11,7 @@ body { margin: 0; min-width: 320px; color: var(--ink); background: var(--paper);
 button,input,select { font: inherit; }
 button,a,input,select,summary { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 3px; }
 .is-hidden { display: none!important; }
 .zone-picker { position:relative; min-width:0; }
 .zone-trigger { width:100%; min-width:0; min-height:44px; padding:9px 30px 9px 12px; border:1px solid var(--line); border-radius:8px; background:var(--paper); color:var(--ink); text-align:left; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -25,7 +27,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .availability-context { display:flex; align-items:center; justify-content:flex-end; gap:14px; min-width:0; margin-left:auto; }
 .compact-zone { width:132px; max-width:100%; min-width:0; }
 .compact-zone .zone-popover { left:auto; right:0; width:280px; }
-.zone-shortcut { width:100%; text-align:left; border:0; border-radius:6px; background:var(--wash); color:var(--accent); padding:9px 10px; margin-bottom:8px; font-size:12px; }
+.zone-shortcut { width:100%; text-align:left; border:0; border-radius:6px; background:var(--wash); color:var(--accent-ink); padding:9px 10px; margin-bottom:8px; font-size:12px; }
 .availability-options { display:flex; align-items:flex-start; flex-wrap:wrap; gap:12px 24px; margin:16px 0; }
 .availability-options .people-filter { flex:1 1 280px; margin:0; }
 .availability-options .window-finder { margin:0; }
@@ -59,7 +61,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .field>span { color: var(--muted); font-size: 12px; font-weight: 500; }
 .field input,.field select { display: block; width: 100%; max-width: 100%; min-width: 0; height: 44px; padding: 9px 12px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; transition: border-color var(--ease),box-shadow var(--ease); }
 .field input:hover,.field select:hover { border-color: #b6beca; }
-.field input:focus,.field select:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px #2a499710; }
+.field input:focus,.field select:focus { outline: 0; border-color: var(--accent-ink); box-shadow: 0 0 0 3px var(--accent-soft); }
 .field input[type="date"],.field input[type="time"] { appearance: none; -webkit-appearance: none; overflow: hidden; font-variant-numeric: tabular-nums; }
 .field input::-webkit-date-and-time-value { min-width: 0; text-align: left; }
 .field input::-webkit-datetime-edit { min-width: 0; padding: 0; }
@@ -74,7 +76,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .date-button .empty { color:#a1a7b1; }
 .date-button svg { width:17px; height:17px; flex-shrink:0; color:var(--muted); }
 .date-button:hover { border-color:#b6beca; }
-.date-button[aria-expanded="true"] { border-color:var(--accent); box-shadow:0 0 0 3px #2a499710; }
+.date-button[aria-expanded="true"] { border-color:var(--accent-ink); box-shadow:0 0 0 3px var(--accent-soft); }
 .date-picker { position:absolute; z-index:8; top:calc(100% + 10px); left:0; width:320px; max-width:100%; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--paper); box-shadow:0 12px 40px #18202b20,0 2px 6px #18202b08; animation:reveal 220ms ease-out; }
 .date-picker-heading,.date-picker-month { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .date-picker-heading { padding-left:8px; color:var(--muted); font-size:13px; }
@@ -87,9 +89,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .date-picker-days { row-gap:3px; }
 .date-picker-days button { min-width:0; height:40px; padding:0; border:1px solid transparent; border-radius:50%; background:transparent; color:var(--ink); font-size:14px; font-variant-numeric:tabular-nums; transition:background-color var(--ease),color var(--ease); }
 .date-picker-days button:hover:not(:disabled) { background:var(--accent-soft); }
-.date-picker-days button.range-day { border-radius:6px; background:var(--accent-soft); color:var(--accent); }
+.date-picker-days button.range-day { border-radius:6px; background:var(--accent-soft); color:var(--accent-ink); }
 .date-picker-days button[aria-current="date"] { border-color:var(--line); }
-.date-picker-days button[aria-pressed="true"] { background:var(--accent); color:#fff; }
+.date-picker-days button[aria-pressed="true"] { background:var(--highlight); color:var(--highlight-text,#fff); }
 .date-picker-days button:disabled { color:#bac0c9; cursor:default; }
 .appearance-row { display: grid; grid-template-columns: minmax(0,1fr) 80px; gap: 14px; }
 .color-input { padding: 5px!important; cursor: pointer; }
@@ -130,10 +132,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .person-chip { min-height: 32px; padding: 5px 9px; border: 1px solid transparent; border-radius: 7px; color: var(--muted); background: transparent; font-size: 12px; transition: background-color var(--ease),color var(--ease); }
 .person-chip:hover { color: var(--ink); }
 .person-chip.active {
-  color: var(--accent);
-  color: color-mix(in srgb,var(--highlight) 42%,#000);
+  color: var(--accent-ink);
   background: var(--accent-soft);
-  background: color-mix(in srgb,var(--highlight) 12%,#fff);
   border-color: transparent;
 }
 .window-finder { margin:0 0 14px; }
@@ -211,8 +211,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .save-area.is-saved .saved-check path { animation: saved-check 320ms ease-out both; }
 @keyframes saved-check { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 
-.confirmed-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 20px 0 0; padding: 16px; color: #25427c; background: var(--accent-soft); border: 1px solid #d5deef; border-radius: 10px; }
-.confirmed-banner span { display: block; margin-bottom: 4px; font-size: 10px; font-weight: 500; letter-spacing: .05em; }
+.confirmed-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0 0; padding: 16px; color: var(--ink); background: #fafbfc; border: 1px solid var(--line); border-left: 3px solid var(--highlight); border-radius: 10px; }
+.confirmed-banner span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12px; font-weight: 400; }
 .confirmed-banner strong { font-size: 14px; font-weight: 550; }
 .confirmed-actions { display: flex; flex-wrap: wrap; gap: 7px; }
 .confirmed-actions a { display: inline-flex; align-items: center; text-decoration: none; }
@@ -222,6 +222,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .organizer-section { min-width: 0; padding-top: 12px; }
 .organizer-section h2 { margin: 0 0 12px; font-size: 13px; font-weight: 500; }
 .organizer-participants { grid-column: 1 / -1; }
+.organizer-section-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.organizer-section-heading h2 { margin:0; }
+.organizer-section-heading .button { flex-shrink:0; }
 .confirmation-fields { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; }
 .inline-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
 .organizer-person { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; border-bottom: 1px solid var(--line); font-size: 13px; }
