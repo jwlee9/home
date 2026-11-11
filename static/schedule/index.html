@@ -10,7 +10,8 @@
     <meta property="og:description" content="Simple scheduling service for groups">
     <title>Schedule · Jaewon Lee</title>
     <link rel="icon" type="image/svg+xml" href="../banana.svg">
-    <link rel="stylesheet" href="schedule.css?v=20261111-1">
+    <link rel="preconnect" href="https://uqnkiubpvovplvnrqaee.supabase.co" crossorigin>
+    <link rel="stylesheet" href="schedule.css?v=20261112-1">
   </head>
   <body>
     <main class="shell">
@@ -19,7 +20,9 @@
         <div class="topbar-actions"><span data-i18n="schedule">일정</span><button class="language-button" id="language-toggle" type="button">EN</button></div>
       </header>
 
-      <section id="create-view" class="create-view" aria-labelledby="create-title">
+      <section id="loading-view" class="loading-view" role="status" aria-live="polite"><span class="loading-mark" aria-hidden="true"></span><span data-i18n="loadingSchedule">일정을 불러오는 중…</span></section>
+
+      <section id="create-view" class="create-view is-hidden" aria-labelledby="create-title">
         <form id="create-form" class="create-form">
           <div class="form-heading"><h1 id="create-title" data-i18n="createSchedule">Create a schedule</h1></div>
           <label class="field"><span data-i18n="eventName">Name</span><input id="event-title" required maxlength="100" data-i18n-placeholder="eventPlaceholder" placeholder="Rehearsal"></label>
@@ -153,7 +156,7 @@
     <script src="theme.js"></script>
     <script src="export.js"></script>
     <script src="zone-picker.js"></script>
-    <script src="schedule.js?v=20261111-1"></script>
+    <script src="schedule.js?v=20261112-1"></script>
     <script src="date-picker.js"></script>
   </body>
 </html>
