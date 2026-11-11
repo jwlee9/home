@@ -38,6 +38,11 @@
   const formatTime = (minute) => new Intl.DateTimeFormat(locale(), { hour:"numeric", minute:"2-digit" }).format(new Date(`2000-01-01T${fromMinutes(minute)}:00`));
   const formatGridTime = (minute) => fromMinutes(minute);
   const validColor = (color) => /^#[0-9a-f]{6}$/i.test(color || "");
+  const loadingColorKey = (slug) => `scheduler-color-${slug}`;
+  function setLoadingColor(slug) {
+    const color = storage.getItem(loadingColorKey(slug));
+    document.documentElement.style.setProperty("--loading-accent", validColor(color) ? color : "#929ba8");
+  }
   const highlightColor = () => validColor(state.event?.highlight_color) ? state.event.highlight_color : "#2a4997";
   const highlightRgb = () => { const color = highlightColor().slice(1); return [0, 2, 4].map((index) => parseInt(color.slice(index, index + 2), 16)).join(", "); };
   function updateCreateColor() {
@@ -342,6 +347,7 @@
   }
   function renderSchedule() {
     document.documentElement.style.setProperty("--highlight", highlightColor());
+    storage.setItem(loadingColorKey(state.event.slug), highlightColor());
     const palette=window.schedulerTheme.palette(highlightColor());
     document.documentElement.style.setProperty("--highlight-text",palette.text);
     document.documentElement.style.setProperty("--window-outline",palette.outline);
@@ -499,7 +505,7 @@
     $("mode-mine").addEventListener("click", () => { state.view = "mine"; state.person = null; renderSchedule(); }); $("mode-group").addEventListener("click", () => { state.view = "group"; state.person = null; renderSchedule(); }); $("save-availability").addEventListener("click", saveAvailability); $("copy-link").addEventListener("click", async () => { await navigator.clipboard.writeText(publicUrl(state.event.slug)); setMessage("save-status", tr("copied")); }); $("copy-organizer-link").addEventListener("click", async () => { await navigator.clipboard.writeText(organizerUrl()); setMessage("organizer-status", tr("organizerCopied")); });
     $("rename-event").addEventListener("click", () => manage("rename", { title:$("manage-title").value.trim() })); $("update-highlight-color").addEventListener("click", () => manage("set_highlight_color", { highlight_color:$("manage-highlight-color").value })); $("toggle-closed").addEventListener("click", () => manage("set_closed", { is_closed:!state.event.is_closed })); $("confirm-time").addEventListener("click", () => manage("confirm", { date:$("confirmed-date").value, start_time:$("confirmed-start").value, end_time:$("confirmed-end").value })); $("clear-confirmed").addEventListener("click", () => manage("clear_confirmation", {})); $("download-ics").addEventListener("click", downloadCalendar); $("export-json").addEventListener("click", downloadJson);
     document.addEventListener("pointermove", onPointerMove, { passive:false }); document.addEventListener("pointerup", endPainting); document.addEventListener("pointercancel", endPainting);
-    const slug = getParam("event"); if (slug) openEvent(slug); else { updateDateSummary(); show("create-view"); }
+    const slug = getParam("event"); if (slug) { setLoadingColor(slug); openEvent(slug); } else { updateDateSummary(); show("create-view"); }
   }
   setup();
 })();

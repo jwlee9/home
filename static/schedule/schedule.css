@@ -52,9 +52,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .language-button { min-height: 32px; padding: 4px 9px; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 6px; font-size: 11px; transition: color var(--ease),border-color var(--ease); }
 .language-button:hover { color: var(--ink); border-color: #adb6c3; }
 .loading-view { min-height: 240px; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 13px; }
-.loading-mark { width: 14px; height: 14px; flex: none; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: loading-turn .8s linear infinite; }
+.loading-mark { width: 14px; height: 14px; flex: none; border: 2px solid var(--line); border-top-color: var(--loading-accent,#929ba8); border-radius: 50%; animation: loading-turn .8s linear infinite; }
 @keyframes loading-turn { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .loading-mark { animation: none; border-color: var(--accent); } }
+@media (prefers-reduced-motion: reduce) { .loading-mark { animation: none; border-color: var(--loading-accent,#929ba8); } }
 
 /* A compact, single-purpose form. Native controls stay inside their grid tracks. */
 .create-view { padding: 58px 0 40px; }
